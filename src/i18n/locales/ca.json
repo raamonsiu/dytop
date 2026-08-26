@@ -75,6 +75,13 @@
       "failed": "No s'ha pogut desar el fons."
     }
   },
+  "visibility": {
+    "label": "Visibilitat de la interfície",
+    "pinned": "Tot fixat",
+    "auto": "Apareix en acostar-te",
+    "ring-only": "Només progrés",
+    "hidden": "Amaga-ho tot"
+  },
   "legacy": {
     "showLyrics": "Mostra la lletra",
     "panels": {
@@ -82,11 +89,6 @@
       "add": "Afegeix una cançó",
       "queue": "Cua",
       "lyrics": "Lletra"
-    },
-    "visibility": {
-      "visible": "Amaga la interfície",
-      "hidden-all": "Mostra només el progrés",
-      "hidden-partial": "Mostra la interfície"
     }
   }
 }

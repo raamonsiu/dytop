@@ -19,16 +19,17 @@ export function PerimeterProgress({ visible }: { visible: boolean }) {
 
   useEffect(() => {
     function draw() {
-      const geometry = perimeterGeometry(
-        window.innerWidth,
-        window.innerHeight,
-        ratioRef.current,
-      );
+      const svg = svgRef.current;
+      if (!svg) return;
 
-      svgRef.current?.setAttribute(
-        "viewBox",
-        `0 0 ${window.innerWidth} ${window.innerHeight}`,
-      );
+      // Measured from the element rather than window.innerWidth: the root is
+      // counter-scaled with CSS zoom to resist zoom-out (useZoomCompensation),
+      // and under that the window's CSS pixels no longer match this element's
+      // own coordinate space — the ring would be drawn to the wrong size.
+      const { width, height } = svg.getBoundingClientRect();
+      const geometry = perimeterGeometry(width, height, ratioRef.current);
+
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
 
       for (const rect of [trackRef.current, fillRef.current]) {
         if (!rect) continue;
@@ -53,14 +54,16 @@ export function PerimeterProgress({ visible }: { visible: boolean }) {
       draw();
     });
 
-    // The ring is sized from the viewport, so it has to be redrawn on resize
-    // even while paused.
-    window.addEventListener("resize", draw);
+    // Redraws whenever its own box changes: window resize, the zoom
+    // compensation kicking in, or any other reflow — including while playback
+    // is paused and the clock is quiet.
+    const observer = new ResizeObserver(draw);
+    if (svgRef.current) observer.observe(svgRef.current);
     draw();
 
     return () => {
       unsubscribe();
-      window.removeEventListener("resize", draw);
+      observer.disconnect();
     };
   }, []);
 

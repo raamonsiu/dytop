@@ -8,11 +8,21 @@
 @import "@fontsource/jetbrains-mono/latin-500.css";
 @import "@fontsource/jetbrains-mono/latin-700.css";
 @import "@fontsource/dotgothic16/latin-400.css";
+/* The prototype's display face, kept for the legacy view: rounded and soft,
+   deliberately at odds with the pixel/mono language of the D1 view. */
+@import "@fontsource/dynapuff/latin-400.css";
+@import "@fontsource/dynapuff/latin-500.css";
+
+/* Short viewports — a laptop at 768px tall, or any window shrunk vertically.
+   The lyrics are the content here, so the transport has to give up room rather
+   than squeezing them to a couple of lines. */
+@custom-variant short (@media (max-height: 720px));
 
 :root {
   --font-mono-ui: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
     Consolas, monospace;
   --font-display-ui: "DotGothic16", var(--font-mono-ui);
+  --font-blobby-ui: "DynaPuff", "Comic Sans MS", cursive;
 
   /* Pre-hydration fallback so the page isn't white for a frame before a view
      shell mounts and supplies the real palette. */
@@ -57,6 +67,7 @@
   --font-sans: var(--font-mono-ui);
   --font-mono: var(--font-mono-ui);
   --font-display: var(--font-display-ui);
+  --font-blobby: var(--font-blobby-ui);
 }
 
 html,

@@ -17,7 +17,7 @@
    mutated in place every frame and read during render to build the material,
    which the React Compiler rules flag by construction. Scoped to this vendored
    file so the rules keep their teeth everywhere else. */
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { EffectComposer, wrapEffect } from "@react-three/postprocessing";
 import { Effect } from "postprocessing";
@@ -202,9 +202,9 @@ function DitheredWaves({
   const mouseRef = useRef(new THREE.Vector2());
   const { viewport, size, gl } = useThree();
 
-  /** Seeded from props once; every later change is written imperatively in
-   * useFrame, because mutating a uniform must not rebuild the material. */
-  const waveUniformsRef = useRef({
+  /** Seed values only — see `liveUniforms` for why this object is not the one
+   * the shader ends up reading. */
+  const seedUniformsRef = useRef({
     time: new THREE.Uniform(0),
     resolution: new THREE.Uniform(new THREE.Vector2(0, 0)),
     waveSpeed: new THREE.Uniform(waveSpeed),
@@ -215,25 +215,43 @@ function DitheredWaves({
     enableMouseInteraction: new THREE.Uniform(enableMouseInteraction ? 1 : 0),
     mouseRadius: new THREE.Uniform(mouseRadius),
   });
-  const waveUniforms = waveUniformsRef.current;
 
-  useEffect(() => {
-    const dpr = gl.getPixelRatio();
-    const width = Math.floor(size.width * dpr);
-    const height = Math.floor(size.height * dpr);
-    const resolution = waveUniforms.resolution.value;
-    if (resolution.x !== width || resolution.y !== height) {
-      resolution.set(width, height);
-    }
-  }, [size, gl]);
+  /**
+   * The uniforms the shader actually samples.
+   *
+   * THREE.ShaderMaterial deep-clones the uniforms it is constructed with
+   * (UniformsUtils.clone), so the object handed to `<shaderMaterial uniforms>`
+   * is *not* the one the GPU reads — not even the individual Uniform instances
+   * are shared. Upstream mutates its own object and, on this three version,
+   * that writes to an orphan: the wave rendered its first frame and then froze
+   * forever, with `time` visibly advancing in JS the whole time.
+   *
+   * Everything dynamic therefore goes through the material.
+   */
+  const liveUniforms = (): typeof seedUniformsRef.current => {
+    const material = mesh.current?.material as THREE.ShaderMaterial | undefined;
+    return (material?.uniforms as typeof seedUniformsRef.current | undefined) ??
+      seedUniformsRef.current;
+  };
 
   const prevColor = useRef<RgbTriplet>([...waveColor]);
 
   useFrame(({ clock }) => {
-    const uniforms = waveUniforms;
+    const uniforms = liveUniforms();
 
     if (!disableAnimation) {
       uniforms.time.value = clock.getElapsedTime();
+    }
+
+    // Resolution is set here rather than in an effect for the same reason: the
+    // material may not exist yet on the first effect pass, and a stale (0,0)
+    // resolution divides by zero in the shader.
+    const dpr = gl.getPixelRatio();
+    const width = Math.floor(size.width * dpr);
+    const height = Math.floor(size.height * dpr);
+    const resolution = uniforms.resolution.value;
+    if (resolution.x !== width || resolution.y !== height) {
+      resolution.set(width, height);
     }
 
     uniforms.waveSpeed.value = waveSpeed;
@@ -270,7 +288,7 @@ function DitheredWaves({
         <shaderMaterial
           vertexShader={waveVertexShader}
           fragmentShader={waveFragmentShader}
-          uniforms={waveUniforms}
+          uniforms={seedUniformsRef.current}
         />
       </mesh>
 

@@ -1,14 +1,18 @@
 import { Outlet } from "react-router-dom";
+import { PerimeterProgress } from "@/components/PerimeterProgress";
+import { UiVisibilityControl } from "@/components/UiVisibilityControl";
 import { DITHER_CONFIG } from "@/constants/dither";
 import { usePref } from "@/lib/prefs";
+import { useUiVisibility } from "@/lib/useUiVisibility";
 import { resolveTheme } from "@/themes/themes";
 import { themeStyle } from "@/themes/themeStyle";
+import type { MinimalOutletContext } from "./outletContext";
 import { DitherBackground } from "./DitherBackground";
 import { MinimalNav } from "./MinimalNav";
 
 /**
- * Chrome shared by the radio and history routes: the palette, the nav and the
- * dither backdrop.
+ * Chrome shared by the radio and history routes: the palette, the nav, the
+ * dither backdrop and the progress ring.
  *
  * The backdrop sits here rather than inside either route so that switching
  * tabs doesn't unmount the canvas — remounting would drop the WebGL context and
@@ -16,6 +20,7 @@ import { MinimalNav } from "./MinimalNav";
  */
 export function MinimalShell() {
   const scheme = usePref("colorScheme");
+  const { state, chromeVisible, ringVisible, setState } = useUiVisibility();
 
   return (
     <div
@@ -37,12 +42,25 @@ export function MinimalShell() {
         <DitherBackground />
       </div>
 
-      <div className="relative z-10">
+      <PerimeterProgress visible={ringVisible} />
+
+      <div
+        className="relative z-10 transition-opacity duration-500"
+        style={{ opacity: chromeVisible ? 1 : 0 }}
+        inert={!chromeVisible}
+      >
         <MinimalNav />
       </div>
+
       <div className="relative z-10 min-h-0 flex-1">
-        <Outlet />
+        <Outlet context={{ chromeVisible } satisfies MinimalOutletContext} />
       </div>
+
+      <UiVisibilityControl
+        state={state}
+        onChange={setState}
+        className="fixed bottom-4 right-4 z-50"
+      />
     </div>
   );
 }

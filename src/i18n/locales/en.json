@@ -75,6 +75,13 @@
       "failed": "The background could not be saved."
     }
   },
+  "visibility": {
+    "label": "Interface visibility",
+    "pinned": "Everything pinned",
+    "auto": "Reveal on approach",
+    "ring-only": "Progress only",
+    "hidden": "Hide everything"
+  },
   "legacy": {
     "showLyrics": "Show lyrics",
     "panels": {
@@ -82,11 +89,6 @@
       "add": "Add song",
       "queue": "Queue",
       "lyrics": "Lyrics"
-    },
-    "visibility": {
-      "visible": "Hide the interface",
-      "hidden-all": "Show progress only",
-      "hidden-partial": "Show the interface"
     }
   }
 }

@@ -46,7 +46,7 @@ export function AmbientLyrics() {
   if (lyrics.status === "plain") {
     return (
       <div className="h-full overflow-y-auto px-8 py-12">
-        <p className="mx-auto max-w-3xl whitespace-pre-line text-center text-xl leading-loose text-foreground/75">
+        <p className="mx-auto max-w-3xl whitespace-pre-line text-center font-blobby text-xl leading-loose text-foreground/75">
           {lyrics.text}
         </p>
       </div>
@@ -77,7 +77,9 @@ export function AmbientLyrics() {
               ref={isActive ? activeLineRef : null}
               className={cn(
                 "mx-auto max-w-4xl px-8 py-3 text-center leading-tight transition-all duration-500",
-                "text-[clamp(1.25rem,3.4vw,2.6rem)]",
+                // DynaPuff, the prototype's face. The rounded display type is
+                // most of what separates this view from the D1 one.
+                "font-blobby text-[clamp(1.25rem,3.4vw,2.6rem)]",
                 isActive && "scale-100 text-foreground opacity-100",
                 !isActive && isPast && "scale-[0.96] opacity-25",
                 !isActive && !isPast && "scale-[0.96] opacity-40",

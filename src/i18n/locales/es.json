@@ -75,6 +75,13 @@
       "failed": "No se pudo guardar el fondo."
     }
   },
+  "visibility": {
+    "label": "Visibilidad de la interfaz",
+    "pinned": "Todo fijo",
+    "auto": "Aparecer al acercarse",
+    "ring-only": "Solo progreso",
+    "hidden": "Ocultar todo"
+  },
   "legacy": {
     "showLyrics": "Mostrar letra",
     "panels": {
@@ -82,11 +89,6 @@
       "add": "Añadir canción",
       "queue": "Cola",
       "lyrics": "Letra"
-    },
-    "visibility": {
-      "visible": "Ocultar la interfaz",
-      "hidden-all": "Mostrar solo el progreso",
-      "hidden-partial": "Mostrar la interfaz"
     }
   }
 }

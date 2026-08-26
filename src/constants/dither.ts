@@ -16,7 +16,9 @@
  *   wall of neon that the lyrics cannot compete with.
  */
 export const DITHER_CONFIG = {
-  waveSpeed: 0.028,
+  // Deliberately near the floor of perceptible: the field should drift, not
+  // animate. Anything above ~0.02 starts pulling attention off the lyrics.
+  waveSpeed: 0.008,
   waveFrequency: 3,
   waveAmplitude: 0.28,
   colorNum: 4,

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import type { UiVisibility } from "@/constants/app";
+import { setPref, usePref } from "./prefs";
 
-/** Pointer within this many pixels of the top edge reveals the navbar. */
+/** Pointer within this many pixels of the top edge reveals the chrome. */
 const TRIGGER_ZONE_PX = 90;
 /** Kept on screen this long after the pointer leaves the zone, so crossing a
  * gap between controls doesn't dismiss it mid-reach. */
@@ -8,26 +10,33 @@ const HIDE_DELAY_MS = 900;
 /** Touch has no hover, so a tap near the top reveals for a fixed window. */
 const TOUCH_REVEAL_MS = 2_600;
 
+export interface UiVisibilityApi {
+  state: UiVisibility;
+  /** Navbar, HUD and any other chrome should be on screen. */
+  chromeVisible: boolean;
+  /** The progress ring should be on screen. */
+  ringVisible: boolean;
+  setState: (next: UiVisibility) => void;
+}
+
 /**
- * Reveals chrome when the pointer approaches the top of the window.
+ * Owns how much of the interface is showing, shared by both views.
  *
- * The legacy view is meant to be looked at, not operated, so the navbar stays
- * out of the way until reached for. `enabled` is false while the hide-UI toggle
- * has chrome switched off — otherwise the navbar would still slide in and
- * defeat the toggle.
+ * The reveal-on-approach listeners only run in `auto`; `pinned` keeps the
+ * chrome up unconditionally, which is the whole point of that state.
  */
-export function useRevealOnTopEdge(enabled: boolean): boolean {
+export function useUiVisibility(): UiVisibilityApi {
+  const state = usePref("uiVisibility");
   const [revealed, setRevealed] = useState(false);
+  const listening = state === "auto";
 
   useEffect(() => {
-    // No listeners while disabled. The hook's return value is already gated on
-    // `enabled`, so there's no state to reset here.
-    if (!enabled) return;
+    if (!listening) return;
 
     let hideTimer: ReturnType<typeof setTimeout> | null = null;
     /** Tracked in the effect's own closure rather than read back from state:
-     * every transition goes through the two helpers below, and depending on
-     * the state value would re-attach all listeners on each reveal. */
+     * depending on the state value would re-attach every listener on each
+     * reveal, and mirroring it into a ref means reading a ref during render. */
     let isRevealed = false;
 
     const clearHide = () => {
@@ -50,11 +59,8 @@ export function useRevealOnTopEdge(enabled: boolean): boolean {
     };
 
     const handlePointerMove = (event: PointerEvent) => {
-      if (event.clientY <= TRIGGER_ZONE_PX) {
-        reveal();
-      } else if (isRevealed) {
-        scheduleHide(HIDE_DELAY_MS);
-      }
+      if (event.clientY <= TRIGGER_ZONE_PX) reveal();
+      else if (isRevealed) scheduleHide(HIDE_DELAY_MS);
     };
 
     const handleTouchStart = (event: TouchEvent) => {
@@ -66,7 +72,7 @@ export function useRevealOnTopEdge(enabled: boolean): boolean {
     };
 
     // The pointer leaving the window never produces a move event below the
-    // zone, which would otherwise leave the navbar stuck open.
+    // zone, which would otherwise leave the chrome stuck open.
     const handlePointerLeave = () => scheduleHide(HIDE_DELAY_MS);
 
     window.addEventListener("pointermove", handlePointerMove);
@@ -79,7 +85,12 @@ export function useRevealOnTopEdge(enabled: boolean): boolean {
       window.removeEventListener("touchstart", handleTouchStart);
       document.removeEventListener("pointerleave", handlePointerLeave);
     };
-  }, [enabled]);
+  }, [listening]);
 
-  return enabled && revealed;
+  return {
+    state,
+    chromeVisible: state === "pinned" || (listening && revealed),
+    ringVisible: state !== "hidden",
+    setState: (next) => setPref("uiVisibility", next),
+  };
 }

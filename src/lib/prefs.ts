@@ -1,4 +1,6 @@
 import {
+  DEFAULT_UI_VISIBILITY,
+  normalizeUiVisibility,
   PREFS_STORAGE_KEY,
   type BackgroundMode,
   type UiVisibility,
@@ -27,7 +29,7 @@ export const DEFAULT_PREFS: Prefs = {
   lyricsVisible: true,
   backgroundMode: "fixed",
   activeBackgroundId: null,
-  uiVisibility: "visible",
+  uiVisibility: DEFAULT_UI_VISIBILITY,
   showRemainingTime: false,
 };
 
@@ -44,7 +46,11 @@ function readStoredPrefs(): Prefs {
     if (!raw) return DEFAULT_PREFS;
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed !== "object" || parsed === null) return DEFAULT_PREFS;
-    return { ...DEFAULT_PREFS, ...(parsed as Partial<Prefs>) };
+    const merged = { ...DEFAULT_PREFS, ...(parsed as Partial<Prefs>) };
+    // Enum values are the part most likely to be renamed between releases, and
+    // an unrecognised one leaves the UI in a state no control can reach.
+    merged.uiVisibility = normalizeUiVisibility(merged.uiVisibility);
+    return merged;
   } catch {
     // Private-mode Safari throws on localStorage access, not just on write.
     return DEFAULT_PREFS;

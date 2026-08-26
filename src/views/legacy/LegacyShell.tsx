@@ -9,13 +9,12 @@ import { useDynamicAccent } from "@/backgrounds/useDynamicAccent";
 import { usePref } from "@/lib/prefs";
 import { resolveTheme } from "@/themes/themes";
 import { themeStyle } from "@/themes/themeStyle";
+import { PerimeterProgress } from "@/components/PerimeterProgress";
+import { UiVisibilityControl } from "@/components/UiVisibilityControl";
+import { useUiVisibility } from "@/lib/useUiVisibility";
 import { AmbientLyrics } from "./AmbientLyrics";
-import { HideUiToggle } from "./HideUiToggle";
 import { LegacyNavbar } from "./LegacyNavbar";
-import { PerimeterProgress } from "./PerimeterProgress";
 import { PlayerHud } from "./PlayerHud";
-import { useRevealOnTopEdge } from "./hooks/useRevealOnTopEdge";
-import { useUiVisibility } from "./hooks/useUiVisibility";
 
 /**
  * The prototype's view, rebuilt: user-supplied backgrounds, an accent sampled
@@ -24,8 +23,7 @@ import { useUiVisibility } from "./hooks/useUiVisibility";
  */
 export function LegacyShell() {
   const scheme = usePref("colorScheme");
-  const { state, chromeVisible, ringVisible, cycle } = useUiVisibility();
-  const navRevealed = useRevealOnTopEdge(chromeVisible);
+  const { state, chromeVisible, ringVisible, setState } = useUiVisibility();
 
   const shellRef = useRef<HTMLDivElement>(null);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null);
@@ -54,9 +52,13 @@ export function LegacyShell() {
       </div>
 
       <PerimeterProgress visible={ringVisible} />
-      <LegacyNavbar revealed={navRevealed} />
+      <LegacyNavbar revealed={chromeVisible} />
       <PlayerHud visible={chromeVisible} />
-      <HideUiToggle state={state} onCycle={cycle} />
+      <UiVisibilityControl
+        state={state}
+        onChange={setState}
+        className="fixed right-4 top-4 z-50"
+      />
     </div>
   );
 }

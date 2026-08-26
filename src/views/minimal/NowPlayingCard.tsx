@@ -13,7 +13,7 @@ export function NowPlayingCard({ track }: { track: Track }) {
   const isPlaying = useIsPlaying();
 
   return (
-    <article className="flex w-full max-w-xl gap-5 border border-surface-border bg-surface/80 p-5 backdrop-blur-md">
+    <article className="flex w-full max-w-xl gap-5 border border-surface-border bg-surface/80 p-5 backdrop-blur-md short:gap-3 short:p-3">
       <img
         src={track.thumb}
         alt=""
@@ -25,7 +25,9 @@ export function NowPlayingCard({ track }: { track: Track }) {
         onError={(event) => {
           event.currentTarget.src = thumbnailUrl(track.videoId);
         }}
-        className="size-24 shrink-0 object-cover"
+        // The artwork is the most expendable element vertically: it sets the
+        // card's height on its own and carries no information the title lacks.
+        className="size-24 shrink-0 object-cover short:hidden"
       />
 
       <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">

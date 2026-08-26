@@ -59,7 +59,7 @@ export function PlayerHud({ visible }: { visible: boolean }) {
       </div>
 
       <div className="hidden min-w-0 max-w-56 sm:block">
-        <p className="truncate text-xs" title={track?.title}>
+        <p className="truncate font-blobby text-xs" title={track?.title}>
           {track?.title ?? t("radio.nothingPlaying")}
         </p>
         <p className="truncate text-[11px] text-muted-foreground">{track?.author}</p>

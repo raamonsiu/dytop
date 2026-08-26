@@ -4,9 +4,11 @@ import { useNowPlaying } from "@/player/queueStore";
 import { AddSongInline } from "./AddSongInline";
 import { LyricsColumn } from "./LyricsColumn";
 import { NowPlayingCard } from "./NowPlayingCard";
+import { useMinimalOutletContext } from "./outletContext";
 
 export function RadioView() {
   const { t } = useTranslation();
+  const { chromeVisible } = useMinimalOutletContext();
   const nowPlaying = useNowPlaying();
   const errorKey = usePlayerError();
 
@@ -26,14 +28,28 @@ export function RadioView() {
 
   return (
     <section className="flex h-full flex-col">
-      <div className="min-h-0 flex-1">
+      {/*
+        min-h-0 lets this shrink below its content, and a floor keeps it from
+        being squeezed to nothing: without both, the card and the paste box took
+        their natural height and left the lyrics a two-line sliver on a short
+        window.
+      */}
+      <div className="min-h-32 flex-1 shrink">
         <LyricsColumn />
       </div>
 
-      <div className="flex flex-col items-center gap-4 px-6 pb-8">
+      <div
+        className="flex shrink-0 flex-col items-center gap-4 px-6 pb-8 transition-opacity duration-500 short:gap-2 short:pb-3"
+        style={{ opacity: chromeVisible ? 1 : 0 }}
+        inert={!chromeVisible}
+      >
         {errorKey ? <PlayerError messageKey={errorKey} /> : null}
         <NowPlayingCard track={nowPlaying} />
-        <AddSongInline />
+        {/* First thing to go when vertical room is scarce: the queue can also
+            be fed from the legacy view, but the lyrics only live here. */}
+        <div className="w-full max-w-xl short:hidden">
+          <AddSongInline />
+        </div>
       </div>
     </section>
   );
