@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/app";
 import { getPrefs } from "@/lib/prefs";
+import { useDocumentLocale } from "@/lib/useDocumentLocale";
 import { PlayerHost } from "@/player/PlayerHost";
 
 /**
@@ -14,6 +15,7 @@ let startupRestoreDone = false;
 export function RootLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  useDocumentLocale();
 
   useEffect(() => {
     if (startupRestoreDone) return;
