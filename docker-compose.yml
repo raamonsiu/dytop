@@ -1,0 +1,7 @@
+services:
+  dytop:
+    build: .
+    image: dytop
+    ports:
+      - "${DYTOP_PORT:-8080}:80"
+    restart: unless-stopped
