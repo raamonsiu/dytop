@@ -1,17 +1,19 @@
 import { useState } from "react";
-import { ListMusic, Plus, Type } from "lucide-react";
+import { Image, ListMusic, Plus, Type } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { ViewToggle } from "@/components/ViewToggle";
 import { Panel } from "@/components/ui/Panel";
 import { cn } from "@/lib/cn";
 import { AddSongPanel } from "./panels/AddSongPanel";
+import { BackgroundPanel } from "./panels/BackgroundPanel";
 import { LyricsPanel } from "./panels/LyricsPanel";
 import { QueuePanel } from "./panels/QueuePanel";
 
-type PanelId = "add" | "queue" | "lyrics";
+type PanelId = "background" | "add" | "queue" | "lyrics";
 
 const PANEL_ICONS: Record<PanelId, typeof Plus> = {
+  background: Image,
   add: Plus,
   queue: ListMusic,
   lyrics: Type,
@@ -66,6 +68,13 @@ export function LegacyNavbar({ revealed }: { revealed: boolean }) {
         <span aria-hidden className="mx-1 h-4 w-px bg-glass-border" />
         <ViewToggle current="legacy" className="px-2" />
 
+        <Panel
+          open={openPanel === "background"}
+          onClose={() => setOpenPanel(null)}
+          label={t("legacy.panels.background")}
+        >
+          <BackgroundPanel />
+        </Panel>
         <Panel
           open={openPanel === "add"}
           onClose={() => setOpenPanel(null)}

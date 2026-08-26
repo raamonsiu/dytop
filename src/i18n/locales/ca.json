@@ -58,9 +58,28 @@
     "reorder": "Arrossega per reordenar",
     "remove": "Treu de la cua"
   },
+  "background": {
+    "upload": "Puja una imatge o un vídeo",
+    "mode": "Mode de fons",
+    "empty": "Encara no has pujat cap fons.",
+    "select": "Fes servir aquest fons",
+    "remove": "Elimina el fons",
+    "modes": {
+      "fixed": "Fix",
+      "random": "Aleatori",
+      "on-song-change": "En canviar"
+    },
+    "errors": {
+      "too-large": "El fitxer és massa gran.",
+      "unsupported-type": "Només s'admeten imatges i vídeos.",
+      "quota": "No queda espai d'emmagatzematge.",
+      "failed": "No s'ha pogut desar el fons."
+    }
+  },
   "legacy": {
     "showLyrics": "Mostra la lletra",
     "panels": {
+      "background": "Fons",
       "add": "Afegeix una cançó",
       "queue": "Cua",
       "lyrics": "Lletra"

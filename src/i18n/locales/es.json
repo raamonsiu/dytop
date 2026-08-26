@@ -58,9 +58,28 @@
     "reorder": "Arrastrar para reordenar",
     "remove": "Quitar de la cola"
   },
+  "background": {
+    "upload": "Subir imagen o vídeo",
+    "mode": "Modo de fondo",
+    "empty": "Todavía no has subido ningún fondo.",
+    "select": "Usar este fondo",
+    "remove": "Eliminar fondo",
+    "modes": {
+      "fixed": "Fijo",
+      "random": "Aleatorio",
+      "on-song-change": "Al cambiar"
+    },
+    "errors": {
+      "too-large": "El archivo es demasiado grande.",
+      "unsupported-type": "Solo se admiten imágenes y vídeos.",
+      "quota": "No queda espacio de almacenamiento.",
+      "failed": "No se pudo guardar el fondo."
+    }
+  },
   "legacy": {
     "showLyrics": "Mostrar letra",
     "panels": {
+      "background": "Fondo",
       "add": "Añadir canción",
       "queue": "Cola",
       "lyrics": "Letra"

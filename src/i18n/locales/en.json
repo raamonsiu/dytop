@@ -58,9 +58,28 @@
     "reorder": "Drag to reorder",
     "remove": "Remove from the queue"
   },
+  "background": {
+    "upload": "Upload an image or video",
+    "mode": "Background mode",
+    "empty": "No backgrounds uploaded yet.",
+    "select": "Use this background",
+    "remove": "Delete background",
+    "modes": {
+      "fixed": "Fixed",
+      "random": "Random",
+      "on-song-change": "Per track"
+    },
+    "errors": {
+      "too-large": "That file is too large.",
+      "unsupported-type": "Only images and videos are supported.",
+      "quota": "No storage space left.",
+      "failed": "The background could not be saved."
+    }
+  },
   "legacy": {
     "showLyrics": "Show lyrics",
     "panels": {
+      "background": "Background",
       "add": "Add song",
       "queue": "Queue",
       "lyrics": "Lyrics"

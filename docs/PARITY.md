@@ -53,16 +53,19 @@ side by side.
 | Clock toggles elapsed / remaining on click | ✅ | Persisted |
 | Three-state hide-UI toggle | ✅ | visible / hidden-all / hidden-partial |
 | Panels: add song, queue, lyrics | ✅ | |
-| Panels: background | ⏳ | Phase 7 |
+| Panels: background | ✅ | |
 
 ## Backgrounds
 
 | Behaviour | Status | Notes |
 |---|---|---|
-| Upload images / video / GIF to IndexedDB | ⏳ | Phase 7 |
-| Three modes: fixed / random 45s / on song change | ⏳ | Phase 7 |
-| Accent sampled from the background | ⏳ | Phase 7 |
-| 1.1s crossfade | ⏳ | Phase 7 |
+| Upload images / video / GIF to IndexedDB | ✅ | |
+| Three modes: fixed / random 45s / on song change | ✅ | |
+| Accent sampled from the background | ✅ | Scoped to the legacy shell, verified not to leak into minimal on client-side navigation |
+| 1.1s crossfade | ✅ | Both media kept mounted for the fade; swapping one element's src showed a hard cut |
+| Random pick excludes the current background | ✅ | |
+| Upload size limit and quota errors surfaced | ⬆️ | New: the prototype swallowed `QuotaExceededError`, so a large video failed silently |
+| Object URLs minted per session | ⬆️ | Fixed: the prototype persisted them, and a URL from a previous load is already revoked |
 
 ## Dropped on purpose
 
