@@ -13,9 +13,47 @@
   --font-mono-ui: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
     Consolas, monospace;
   --font-display-ui: "DotGothic16", var(--font-mono-ui);
+
+  /* Pre-hydration fallback so the page isn't white for a frame before a view
+     shell mounts and supplies the real palette. */
+  --background: #0a0a0a;
+  --foreground: #f5f5f5;
+}
+
+/* The accent indirection.
+   Every view shell carries data-view, so declaring `--accent` here means each
+   shell recomputes it against its OWN --accent-override. Legacy's dynamic
+   accent (sampled from the active background) writes --accent-override on the
+   legacy shell node; minimal, which never sets it, keeps falling through to
+   its palette. Declared on :root instead, the override would leak across views
+   on client-side navigation, because children only inherit the already-computed
+   value of --accent. */
+[data-view] {
+  --accent: var(--accent-override, var(--accent-base));
+
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-mono-ui);
 }
 
 @theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-border: var(--surface-border);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-glass: var(--glass);
+  --color-glass-strong: var(--glass-strong);
+  --color-glass-border: var(--glass-border);
+
+  /* Gives `rounded-view`, which is 0 in minimal and 14px in legacy — the one
+     utility that carries most of the difference between the two languages. */
+  --radius-view: var(--radius);
+
   --font-sans: var(--font-mono-ui);
   --font-mono: var(--font-mono-ui);
   --font-display: var(--font-display-ui);
@@ -29,5 +67,71 @@ body,
 
 body {
   margin: 0;
+  background: var(--background);
+  color: var(--foreground);
   font-family: var(--font-mono-ui);
+  /* Both views are single-screen apps with their own internal scrollers. */
+  overflow: hidden;
+}
+
+::selection {
+  background: var(--selection-background);
+  color: var(--selection-foreground);
+}
+
+::-moz-selection {
+  background: var(--selection-background);
+  color: var(--selection-foreground);
+}
+
+/* Small dot-grid decoration, ported from the D1ITO portfolio. */
+.dot-grid {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 6px 6px;
+}
+
+/* Horizontal "lost pixels" divider: 4px squares on a 6px grid with a couple
+   deliberately missing. Fixed pattern, not random. Ported from D1ITO. */
+.pixel-divider {
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent 1px,
+    currentColor 1px,
+    currentColor 5px,
+    transparent 5px,
+    transparent 7px,
+    currentColor 7px,
+    currentColor 11px,
+    transparent 11px,
+    transparent 19px,
+    currentColor 19px,
+    currentColor 23px,
+    transparent 23px,
+    transparent 25px,
+    currentColor 25px,
+    currentColor 29px,
+    transparent 29px,
+    transparent 31px,
+    currentColor 31px,
+    currentColor 35px,
+    transparent 35px,
+    transparent 43px,
+    currentColor 43px,
+    currentColor 47px,
+    transparent 47px,
+    transparent 48px
+  );
+  background-size: 48px 100%;
+  background-repeat: repeat-x;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
