@@ -1,8 +1,14 @@
 import { useEffect } from "react";
 
-/** How far the interface may be scaled down and up. */
-export const MIN_UI_SCALE = 0.75;
-export const MAX_UI_SCALE = 1.6;
+/**
+ * How far the interface may be scaled down and up.
+ *
+ * The floor is deliberately close to 1: this UI is built on small mono labels,
+ * and much below full size they stop being readable rather than just looking
+ * compact. The ceiling is generous because scaling up is never harmful.
+ */
+export const MIN_UI_SCALE = 0.9;
+export const MAX_UI_SCALE = 2.2;
 
 /** Multiplicative step per zoom gesture, roughly matching a browser's own. */
 const STEP = 1.1;

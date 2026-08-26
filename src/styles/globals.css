@@ -76,6 +76,13 @@ body,
   height: 100%;
 }
 
+html {
+  /* Everything is sized in rem, so this one value scales the whole interface.
+     A percentage rather than a px value, so a reader who has raised their
+     browser's default font size still gets the benefit of it. */
+  font-size: 115%;
+}
+
 body {
   margin: 0;
   background: var(--background);
