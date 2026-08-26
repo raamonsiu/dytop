@@ -1,0 +1,24 @@
+{
+  "app": {
+    "role": "ambient player"
+  },
+  "nav": {
+    "radio": "radio",
+    "history": "history",
+    "toLegacy": "legacy view",
+    "toMinimal": "minimal view",
+    "language": "Language"
+  },
+  "history": {
+    "title": "history",
+    "empty": "Nothing played yet.",
+    "count_one": "{{count}} track",
+    "count_other": "{{count}} tracks"
+  },
+  "radio": {
+    "nothingPlaying": "Nothing playing."
+  },
+  "legacy": {
+    "placeholder": "legacy view"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "app": {
+    "role": "reproductor ambient"
+  },
+  "nav": {
+    "radio": "ràdio",
+    "history": "historial",
+    "toLegacy": "vista legacy",
+    "toMinimal": "vista minimal",
+    "language": "Idioma"
+  },
+  "history": {
+    "title": "historial",
+    "empty": "Encara no has reproduït res.",
+    "count_one": "{{count}} tema",
+    "count_other": "{{count}} temes"
+  },
+  "radio": {
+    "nothingPlaying": "No sona res."
+  },
+  "legacy": {
+    "placeholder": "vista legacy"
+  }
+}
