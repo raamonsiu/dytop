@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import { usePref } from "@/lib/prefs";
 import { findActiveLine } from "@/lyrics/findActiveLine";
+import { useCentredColumn } from "@/lyrics/useCentredColumn";
 import { useLyrics } from "@/lyrics/lyricsStore";
 import { subscribeToTime } from "@/player/clock";
 
@@ -25,11 +26,11 @@ export function LyricsColumn() {
   const delay = usePref("lyricsDelay");
   const [activeIndex, setActiveIndex] = useState(-1);
 
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const columnRef = useRef<HTMLDivElement>(null);
-  const activeLineRef = useRef<HTMLParagraphElement>(null);
-
   const lines = lyrics.status === "synced" ? lyrics.lines : null;
+  const { columnRef, activeLineRef } = useCentredColumn<
+    HTMLDivElement,
+    HTMLParagraphElement
+  >([activeIndex, lines]);
 
   useEffect(() => {
     // No reset when there are no lines: the synced column isn't rendered in
@@ -45,20 +46,6 @@ export function LyricsColumn() {
       setActiveIndex((previous) => (previous === next ? previous : next));
     });
   }, [lines, delay]);
-
-  useLayoutEffect(() => {
-    const column = columnRef.current;
-    const active = activeLineRef.current;
-    const viewport = viewportRef.current;
-    if (!column || !viewport) return;
-
-    // Measured rather than assumed: lines wrap, so their heights differ and a
-    // fixed line-height would drift out of centre over a long song.
-    const offset = active
-      ? active.offsetTop + active.offsetHeight / 2 - viewport.clientHeight / 2
-      : 0;
-    column.style.transform = `translateY(${-offset}px)`;
-  }, [activeIndex, lines]);
 
   if (lyrics.status === "idle") return null;
 
@@ -86,7 +73,6 @@ export function LyricsColumn() {
 
   return (
     <div
-      ref={viewportRef}
       className="relative h-full overflow-hidden"
       // Fades the ends instead of cutting them, so lines enter and leave
       // rather than popping at a hard edge.

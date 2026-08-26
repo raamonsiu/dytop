@@ -6,8 +6,7 @@
     "radio": "radio",
     "history": "historial",
     "toLegacy": "vista legacy",
-    "toMinimal": "vista minimal",
-    "language": "Idioma"
+    "toMinimal": "vista minimal"
   },
   "history": {
     "title": "historial",

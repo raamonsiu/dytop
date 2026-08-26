@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Image, ListMusic, Plus, Type } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { ViewToggle } from "@/components/ViewToggle";
 import { Panel } from "@/components/ui/Panel";
 import { cn } from "@/lib/cn";
@@ -63,8 +62,6 @@ export function LegacyNavbar({ revealed }: { revealed: boolean }) {
           );
         })}
 
-        <span aria-hidden className="mx-1 h-4 w-px bg-glass-border" />
-        <LocaleSwitcher className="px-1" />
         <span aria-hidden className="mx-1 h-4 w-px bg-glass-border" />
         <ViewToggle current="legacy" className="px-2" />
 

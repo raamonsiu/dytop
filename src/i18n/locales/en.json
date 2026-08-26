@@ -6,8 +6,7 @@
     "radio": "radio",
     "history": "history",
     "toLegacy": "legacy view",
-    "toMinimal": "minimal view",
-    "language": "Language"
+    "toMinimal": "minimal view"
   },
   "history": {
     "title": "history",

@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import { DITHER_CONFIG } from "@/constants/dither";
 import { usePref } from "@/lib/prefs";
 import { resolveTheme } from "@/themes/themes";
 import { themeStyle } from "@/themes/themeStyle";
@@ -22,12 +23,24 @@ export function MinimalShell() {
       style={themeStyle(resolveTheme("minimal", scheme))}
       className="relative flex h-full flex-col"
     >
-      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
+      {/*
+        z-0 with the content above, never a negative z-index: [data-view] paints
+        an opaque `background`, and a child at -z-10 sits behind its own
+        parent's background — which rendered the whole backdrop invisible even
+        though the canvas was drawing correctly.
+      */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{ opacity: DITHER_CONFIG.opacity }}
+      >
         <DitherBackground />
       </div>
 
-      <MinimalNav />
-      <div className="min-h-0 flex-1">
+      <div className="relative z-10">
+        <MinimalNav />
+      </div>
+      <div className="relative z-10 min-h-0 flex-1">
         <Outlet />
       </div>
     </div>

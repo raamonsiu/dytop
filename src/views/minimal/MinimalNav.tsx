@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import { ViewToggle } from "@/components/ViewToggle";
-import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { ROUTES } from "@/constants/app";
 import { cn } from "@/lib/cn";
 import { Brand } from "./Brand";
@@ -38,8 +37,6 @@ export function MinimalNav() {
       <nav className="flex items-center gap-5">
         <Tab to={ROUTES.radio} label={t("nav.radio")} />
         <Tab to={ROUTES.history} label={t("nav.history")} />
-        <span aria-hidden className="h-3 w-px bg-surface-border" />
-        <LocaleSwitcher />
         <span aria-hidden className="h-3 w-px bg-surface-border" />
         <ViewToggle current="minimal" />
       </nav>

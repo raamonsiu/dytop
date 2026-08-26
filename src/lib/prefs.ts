@@ -6,12 +6,9 @@ import {
 import type { ColorScheme, ViewName } from "@/themes/tokens";
 import { createStore, useStoreSelector } from "./createStore";
 
-export type AppLocale = "en" | "es" | "ca";
-
 export interface Prefs {
   /** Which view to restore on a cold start. */
   lastView: ViewName;
-  locale: AppLocale;
   colorScheme: ColorScheme;
   /** Seconds added to playback time before matching a lyric line. */
   lyricsDelay: number;
@@ -25,7 +22,6 @@ export interface Prefs {
 
 export const DEFAULT_PREFS: Prefs = {
   lastView: "minimal",
-  locale: "es",
   colorScheme: "dark",
   lyricsDelay: 0,
   lyricsVisible: true,

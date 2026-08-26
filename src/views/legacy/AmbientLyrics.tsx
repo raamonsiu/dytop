@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import { usePref } from "@/lib/prefs";
 import { findActiveLine } from "@/lyrics/findActiveLine";
+import { useCentredColumn } from "@/lyrics/useCentredColumn";
 import { useLyrics } from "@/lyrics/lyricsStore";
 import { subscribeToTime } from "@/player/clock";
 
@@ -17,11 +18,11 @@ export function AmbientLyrics() {
   const enabled = usePref("lyricsVisible");
   const [activeIndex, setActiveIndex] = useState(-1);
 
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const columnRef = useRef<HTMLDivElement>(null);
-  const activeLineRef = useRef<HTMLParagraphElement>(null);
-
   const lines = lyrics.status === "synced" ? lyrics.lines : null;
+  const { columnRef, activeLineRef } = useCentredColumn<
+    HTMLDivElement,
+    HTMLParagraphElement
+  >([activeIndex, lines, enabled]);
 
   useEffect(() => {
     if (!lines || !enabled) return;
@@ -31,18 +32,6 @@ export function AmbientLyrics() {
       setActiveIndex((previous) => (previous === next ? previous : next));
     });
   }, [lines, delay, enabled]);
-
-  useLayoutEffect(() => {
-    const column = columnRef.current;
-    const viewport = viewportRef.current;
-    const active = activeLineRef.current;
-    if (!column || !viewport) return;
-
-    const offset = active
-      ? active.offsetTop + active.offsetHeight / 2 - viewport.clientHeight / 2
-      : 0;
-    column.style.transform = `translateY(${-offset}px)`;
-  }, [activeIndex, lines, enabled]);
 
   if (!enabled || lyrics.status === "idle") return null;
 
@@ -66,7 +55,6 @@ export function AmbientLyrics() {
 
   return (
     <div
-      ref={viewportRef}
       className="relative h-full overflow-hidden"
       style={{
         maskImage:
