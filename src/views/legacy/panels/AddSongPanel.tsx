@@ -2,28 +2,33 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+import { useTransientMessage } from "@/lib/useTransientMessage";
 import { addTrackByUrl } from "@/player/controller";
 
 export function AddSongPanel() {
   const { t } = useTranslation();
   const [url, setUrl] = useState("");
   const [pending, setPending] = useState(false);
-  const [feedback, setFeedback] = useState<{ ok: boolean; key: string } | null>(null);
+  const {
+    message: feedback,
+    show,
+    clear,
+  } = useTransientMessage<{ ok: boolean; key: string }>();
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (!url.trim() || pending) return;
 
     setPending(true);
-    setFeedback(null);
+    clear();
     const result = await addTrackByUrl(url);
     setPending(false);
 
     if (result.ok) {
       setUrl("");
-      setFeedback({ ok: true, key: "player.added" });
+      show({ ok: true, key: "player.added" });
     } else {
-      setFeedback({ ok: false, key: "errors.invalidUrl" });
+      show({ ok: false, key: "errors.invalidUrl" });
     }
   }
 

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Image, ListMusic, Plus, Type } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Brand } from "@/components/Brand";
+import { NavTabs } from "@/components/NavTabs";
 import { ViewToggle } from "@/components/ViewToggle";
 import { Panel } from "@/components/ui/Panel";
 import { cn } from "@/lib/cn";
@@ -39,7 +41,12 @@ export function LegacyNavbar({ revealed }: { revealed: boolean }) {
       }}
       inert={!revealed}
     >
-      <nav className="relative flex items-center gap-1 rounded-view border border-glass-border bg-glass-strong p-1 shadow-2xl backdrop-blur-xl">
+      <nav className="relative flex items-center gap-1 rounded-view border border-glass-border bg-glass-strong px-3 py-1 shadow-2xl backdrop-blur-xl">
+        <Brand view="legacy" />
+        <span aria-hidden className="mx-2 h-4 w-px bg-glass-border" />
+        <NavTabs view="legacy" />
+        <span aria-hidden className="mx-2 h-4 w-px bg-glass-border" />
+
         {(Object.keys(PANEL_ICONS) as PanelId[]).map((id) => {
           const Icon = PANEL_ICONS[id];
           return (

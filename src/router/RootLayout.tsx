@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/app";
 import { getPrefs } from "@/lib/prefs";
 import { useDocumentLocale } from "@/lib/useDocumentLocale";
-import { useZoomCompensation } from "@/lib/useZoomCompensation";
+import { useZoomControl } from "@/lib/useZoomControl";
 import { PlayerHost } from "@/player/PlayerHost";
 
 /**
@@ -17,7 +17,7 @@ export function RootLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   useDocumentLocale();
-  useZoomCompensation();
+  useZoomControl();
 
   useEffect(() => {
     if (startupRestoreDone) return;

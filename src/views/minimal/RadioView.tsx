@@ -45,11 +45,13 @@ export function RadioView() {
       >
         {errorKey ? <PlayerError messageKey={errorKey} /> : null}
         <NowPlayingCard track={nowPlaying} />
-        {/* First thing to go when vertical room is scarce: the queue can also
-            be fed from the legacy view, but the lyrics only live here. */}
-        <div className="w-full max-w-xl short:hidden">
-          <AddSongInline />
-        </div>
+        {/*
+          Never hidden, only compacted. An earlier version dropped this on short
+          viewports, which also fired on zoom-in — zooming shrinks the viewport
+          in CSS pixels — so the only way to add a track vanished at exactly the
+          moment someone was trying to read the page more closely.
+        */}
+        <AddSongInline />
       </div>
     </section>
   );

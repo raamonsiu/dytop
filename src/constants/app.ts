@@ -6,6 +6,14 @@ export const ROUTES = {
   radio: "/",
   history: "/history",
   legacy: "/legacy",
+  legacyHistory: "/legacy/history",
+} as const;
+
+/** Each view has its own radio and history, so switching tabs never switches
+ * visual mode. */
+export const VIEW_ROUTES = {
+  minimal: { radio: ROUTES.radio, history: ROUTES.history },
+  legacy: { radio: ROUTES.legacy, history: ROUTES.legacyHistory },
 } as const;
 
 /** localStorage namespace. Everything the app persists outside IndexedDB lives

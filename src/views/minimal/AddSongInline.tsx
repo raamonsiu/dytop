@@ -2,9 +2,13 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+import { useTransientMessage } from "@/lib/useTransientMessage";
 import { addTrackByUrl } from "@/player/controller";
 
-type Feedback = { kind: "ok" | "error"; key: string } | null;
+interface Feedback {
+  kind: "ok" | "error";
+  key: string;
+}
 
 /**
  * The only way tracks enter the app: paste a YouTube URL.
@@ -17,22 +21,22 @@ export function AddSongInline() {
   const { t } = useTranslation();
   const [url, setUrl] = useState("");
   const [pending, setPending] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback>(null);
+  const { message: feedback, show, clear } = useTransientMessage<Feedback>();
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (!url.trim() || pending) return;
 
     setPending(true);
-    setFeedback(null);
+    clear();
     const result = await addTrackByUrl(url);
     setPending(false);
 
     if (result.ok) {
       setUrl("");
-      setFeedback({ kind: "ok", key: "player.added" });
+      show({ kind: "ok", key: "player.added" });
     } else {
-      setFeedback({ kind: "error", key: "errors.invalidUrl" });
+      show({ kind: "error", key: "errors.invalidUrl" });
     }
   }
 
@@ -48,6 +52,7 @@ export function AddSongInline() {
           className={cn(
             "min-w-0 flex-1 border border-surface-border bg-surface px-3 py-2 text-xs",
             "outline-none placeholder:text-muted-foreground focus-visible:border-accent",
+            "short:py-1",
           )}
         />
         <Button type="submit" variant="primary" disabled={pending}>

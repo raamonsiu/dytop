@@ -2,12 +2,17 @@ import { useEffect, useState } from "react";
 import type { UiVisibility } from "@/constants/app";
 import { setPref, usePref } from "./prefs";
 
-/** Pointer within this many pixels of the top edge reveals the chrome. */
-const TRIGGER_ZONE_PX = 90;
-/** Kept on screen this long after the pointer leaves the zone, so crossing a
- * gap between controls doesn't dismiss it mid-reach. */
-const HIDE_DELAY_MS = 900;
-/** Touch has no hover, so a tap near the top reveals for a fixed window. */
+/**
+ * Movement below this many pixels is ignored.
+ *
+ * Any pointer motion reveals the chrome, so there has to be a floor: mice jitter
+ * by a pixel at rest, and a trackpad resting under a palm emits a slow drip of
+ * sub-pixel moves. Without it the chrome would never actually hide.
+ */
+const MOVEMENT_THRESHOLD_PX = 12;
+/** How long the chrome stays after the pointer goes still. */
+const HIDE_DELAY_MS = 2_000;
+/** Touch has no hover, so a tap reveals for a fixed window. */
 const TOUCH_REVEAL_MS = 2_600;
 
 export interface UiVisibilityApi {
@@ -34,10 +39,6 @@ export function useUiVisibility(): UiVisibilityApi {
     if (!listening) return;
 
     let hideTimer: ReturnType<typeof setTimeout> | null = null;
-    /** Tracked in the effect's own closure rather than read back from state:
-     * depending on the state value would re-attach every listener on each
-     * reveal, and mirroring it into a ref means reading a ref during render. */
-    let isRevealed = false;
 
     const clearHide = () => {
       if (hideTimer) clearTimeout(hideTimer);
@@ -46,33 +47,40 @@ export function useUiVisibility(): UiVisibilityApi {
 
     const reveal = () => {
       clearHide();
-      isRevealed = true;
       setRevealed(true);
     };
 
     const scheduleHide = (delay: number) => {
       clearHide();
-      hideTimer = setTimeout(() => {
-        isRevealed = false;
-        setRevealed(false);
-      }, delay);
+      hideTimer = setTimeout(() => setRevealed(false), delay);
     };
+
+    let lastX: number | null = null;
+    let lastY: number | null = null;
 
     const handlePointerMove = (event: PointerEvent) => {
-      if (event.clientY <= TRIGGER_ZONE_PX) reveal();
-      else if (isRevealed) scheduleHide(HIDE_DELAY_MS);
-    };
-
-    const handleTouchStart = (event: TouchEvent) => {
-      const y = event.touches[0]?.clientY ?? Number.POSITIVE_INFINITY;
-      if (y <= TRIGGER_ZONE_PX) {
-        reveal();
-        scheduleHide(TOUCH_REVEAL_MS);
+      // Any direction counts, not just a trip to the top edge — reaching for
+      // the mouse at all is the signal that someone wants the controls.
+      if (lastX !== null && lastY !== null) {
+        const travelled = Math.hypot(event.clientX - lastX, event.clientY - lastY);
+        if (travelled < MOVEMENT_THRESHOLD_PX) return;
       }
+      lastX = event.clientX;
+      lastY = event.clientY;
+
+      reveal();
+      // Restarted on every qualifying move, so the chrome stays up while the
+      // pointer is in use and fades once it settles.
+      scheduleHide(HIDE_DELAY_MS);
     };
 
-    // The pointer leaving the window never produces a move event below the
-    // zone, which would otherwise leave the chrome stuck open.
+    const handleTouchStart = () => {
+      reveal();
+      scheduleHide(TOUCH_REVEAL_MS);
+    };
+
+    // Leaving the window emits no further moves, which would otherwise leave
+    // the chrome stuck open.
     const handlePointerLeave = () => scheduleHide(HIDE_DELAY_MS);
 
     window.addEventListener("pointermove", handlePointerMove);

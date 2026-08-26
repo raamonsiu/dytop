@@ -12,7 +12,7 @@ import { themeStyle } from "@/themes/themeStyle";
 import { PerimeterProgress } from "@/components/PerimeterProgress";
 import { UiVisibilityControl } from "@/components/UiVisibilityControl";
 import { useUiVisibility } from "@/lib/useUiVisibility";
-import { AmbientLyrics } from "./AmbientLyrics";
+import { Outlet } from "react-router-dom";
 import { LegacyNavbar } from "./LegacyNavbar";
 import { PlayerHud } from "./PlayerHud";
 
@@ -47,9 +47,7 @@ export function LegacyShell() {
     >
       <BackgroundLayer entry={background} mediaRef={mediaRef} />
 
-      <div className="absolute inset-0 z-10">
-        <AmbientLyrics />
-      </div>
+      <Outlet />
 
       <PerimeterProgress visible={ringVisible} />
       <LegacyNavbar revealed={chromeVisible} />
