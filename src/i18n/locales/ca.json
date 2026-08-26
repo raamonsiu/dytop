@@ -16,7 +16,30 @@
     "count_other": "{{count}} temes"
   },
   "radio": {
-    "nothingPlaying": "No sona res."
+    "nothingPlaying": "No sona res"
+  },
+  "player": {
+    "play": "Reprodueix",
+    "pause": "Pausa",
+    "next": "Següent",
+    "previous": "Anterior",
+    "seek": "Vés a un punt de la pista",
+    "pasteUrl": "Enganxa una URL de YouTube…",
+    "add": "afegeix",
+    "adding": "…",
+    "added": "Afegit a la cua."
+  },
+  "errors": {
+    "invalidUrl": "Aquesta no és una URL de YouTube vàlida.",
+    "player": {
+      "invalidId": "Identificador de vídeo no vàlid.",
+      "html5": "Error de reproducció HTML5.",
+      "notFound": "Vídeo no trobat, privat o eliminat.",
+      "embedDisabled": "El propietari no permet reproduir aquest vídeo fora de YouTube.",
+      "originRejected": "YouTube ha rebutjat la reproducció per l'origen de la pàgina.",
+      "notResponding": "El reproductor no respon.",
+      "unknown": "Error desconegut del reproductor."
+    }
   },
   "legacy": {
     "placeholder": "vista legacy"

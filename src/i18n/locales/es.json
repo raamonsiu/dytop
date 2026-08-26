@@ -16,7 +16,30 @@
     "count_other": "{{count}} temas"
   },
   "radio": {
-    "nothingPlaying": "Nada sonando."
+    "nothingPlaying": "Nada sonando"
+  },
+  "player": {
+    "play": "Reproducir",
+    "pause": "Pausar",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "seek": "Ir a un punto de la pista",
+    "pasteUrl": "Pega una URL de YouTube…",
+    "add": "añadir",
+    "adding": "…",
+    "added": "Añadido a la cola."
+  },
+  "errors": {
+    "invalidUrl": "Esa no es una URL de YouTube válida.",
+    "player": {
+      "invalidId": "ID de vídeo inválido.",
+      "html5": "Error de reproducción HTML5.",
+      "notFound": "Vídeo no encontrado, privado o eliminado.",
+      "embedDisabled": "El dueño del vídeo no permite reproducirlo fuera de YouTube.",
+      "originRejected": "YouTube rechazó la reproducción por el origen de la página.",
+      "notResponding": "El reproductor no responde.",
+      "unknown": "Error desconocido del reproductor."
+    }
   },
   "legacy": {
     "placeholder": "vista legacy"

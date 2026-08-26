@@ -16,7 +16,30 @@
     "count_other": "{{count}} tracks"
   },
   "radio": {
-    "nothingPlaying": "Nothing playing."
+    "nothingPlaying": "Nothing playing"
+  },
+  "player": {
+    "play": "Play",
+    "pause": "Pause",
+    "next": "Next",
+    "previous": "Previous",
+    "seek": "Seek within the track",
+    "pasteUrl": "Paste a YouTube URL…",
+    "add": "add",
+    "adding": "…",
+    "added": "Added to the queue."
+  },
+  "errors": {
+    "invalidUrl": "That is not a valid YouTube URL.",
+    "player": {
+      "invalidId": "Invalid video id.",
+      "html5": "HTML5 playback error.",
+      "notFound": "Video not found, private or removed.",
+      "embedDisabled": "The owner does not allow this video to play outside YouTube.",
+      "originRejected": "YouTube refused playback from this page's origin.",
+      "notResponding": "The player is not responding.",
+      "unknown": "Unknown player error."
+    }
   },
   "legacy": {
     "placeholder": "legacy view"
