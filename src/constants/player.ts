@@ -28,3 +28,13 @@ export const VIDEO_ACCENT_SAMPLE_MS = 400;
 /** Refuse background uploads above this size. IndexedDB quota failures surface
  * asynchronously and are easy to swallow, so the limit is enforced up front. */
 export const MAX_BACKGROUND_BYTES = 80 * 1024 * 1024;
+
+/**
+ * Anything longer than this is a live stream, not a track.
+ *
+ * YouTube caps regular uploads at 12 hours, but reports a duration for live
+ * streams that grows without bound — a lofi radio stream answers with roughly
+ * 3.8 years. Treating that as a real duration gives a progress bar that never
+ * moves and a "33778:11:52" readout.
+ */
+export const MAX_TRACK_DURATION_SECONDS = 12 * 3600;
