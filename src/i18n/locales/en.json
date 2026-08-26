@@ -49,7 +49,26 @@
       "unknown": "Unknown player error."
     }
   },
+  "queue": {
+    "history": "Recently played",
+    "nowPlaying": "Now playing",
+    "upcoming_one": "Queue · {{count}} track",
+    "upcoming_other": "Queue · {{count}} tracks",
+    "empty": "The queue is empty.",
+    "reorder": "Drag to reorder",
+    "remove": "Remove from the queue"
+  },
   "legacy": {
-    "placeholder": "legacy view"
+    "showLyrics": "Show lyrics",
+    "panels": {
+      "add": "Add song",
+      "queue": "Queue",
+      "lyrics": "Lyrics"
+    },
+    "visibility": {
+      "visible": "Hide the interface",
+      "hidden-all": "Show progress only",
+      "hidden-partial": "Show the interface"
+    }
   }
 }

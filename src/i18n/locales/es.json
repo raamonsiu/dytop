@@ -49,7 +49,26 @@
       "unknown": "Error desconocido del reproductor."
     }
   },
+  "queue": {
+    "history": "Reproducidas recientemente",
+    "nowPlaying": "Reproduciendo",
+    "upcoming_one": "Cola · {{count}} tema",
+    "upcoming_other": "Cola · {{count}} temas",
+    "empty": "La cola está vacía.",
+    "reorder": "Arrastrar para reordenar",
+    "remove": "Quitar de la cola"
+  },
   "legacy": {
-    "placeholder": "vista legacy"
+    "showLyrics": "Mostrar letra",
+    "panels": {
+      "add": "Añadir canción",
+      "queue": "Cola",
+      "lyrics": "Letra"
+    },
+    "visibility": {
+      "visible": "Ocultar la interfaz",
+      "hidden-all": "Mostrar solo el progreso",
+      "hidden-partial": "Mostrar la interfaz"
+    }
   }
 }

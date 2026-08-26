@@ -49,7 +49,26 @@
       "unknown": "Error desconegut del reproductor."
     }
   },
+  "queue": {
+    "history": "Reproduïdes recentment",
+    "nowPlaying": "Sonant ara",
+    "upcoming_one": "Cua · {{count}} tema",
+    "upcoming_other": "Cua · {{count}} temes",
+    "empty": "La cua és buida.",
+    "reorder": "Arrossega per reordenar",
+    "remove": "Treu de la cua"
+  },
   "legacy": {
-    "placeholder": "vista legacy"
+    "showLyrics": "Mostra la lletra",
+    "panels": {
+      "add": "Afegeix una cançó",
+      "queue": "Cua",
+      "lyrics": "Lletra"
+    },
+    "visibility": {
+      "visible": "Amaga la interfície",
+      "hidden-all": "Mostra només el progrés",
+      "hidden-partial": "Mostra la interfície"
+    }
   }
 }
