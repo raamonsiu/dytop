@@ -1,5 +1,6 @@
 import { extractYouTubeId } from "@/lib/youtube/extractYouTubeId";
 import { fetchTrack } from "@/lib/youtube/oembed";
+import { loadLyricsFor } from "@/lyrics/lyricsStore";
 import { resyncClock } from "./clock";
 import {
   getCurrentTime,
@@ -37,6 +38,17 @@ let initPromise: Promise<void> | null = null;
  */
 export function initPlayer(mount: HTMLElement): Promise<void> {
   if (initPromise) return initPromise;
+
+  // Lyrics follow the queue rather than being fetched at each call site, so
+  // every path that changes the track — advance, jump, restore, error skip —
+  // gets them without remembering to ask.
+  let lastTrackId: string | null = null;
+  queueStore.subscribe(() => {
+    const track = queueStore.get().nowPlaying;
+    if (track?.id === lastTrackId) return;
+    lastTrackId = track?.id ?? null;
+    loadLyricsFor(track);
+  });
 
   onAdvanceRequested(() => {
     const next = advance();

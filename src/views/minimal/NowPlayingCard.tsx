@@ -6,6 +6,7 @@ import { playNext, togglePlayPause } from "@/player/controller";
 import { useIsPlaying } from "@/player/playerStore";
 import type { Track } from "@/player/types";
 import { LinearProgress } from "./LinearProgress";
+import { LyricsDelayControl } from "./LyricsDelayControl";
 
 export function NowPlayingCard({ track }: { track: Track }) {
   const { t } = useTranslation();
@@ -37,16 +38,19 @@ export function NowPlayingCard({ track }: { track: Track }) {
 
         <LinearProgress />
 
-        <div className="flex items-center gap-2">
-          <IconButton
-            onClick={togglePlayPause}
-            aria-label={t(isPlaying ? "player.pause" : "player.play")}
-          >
-            {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-          </IconButton>
-          <IconButton onClick={playNext} aria-label={t("player.next")}>
-            <SkipForward size={14} />
-          </IconButton>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <IconButton
+              onClick={togglePlayPause}
+              aria-label={t(isPlaying ? "player.pause" : "player.play")}
+            >
+              {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+            </IconButton>
+            <IconButton onClick={playNext} aria-label={t("player.next")}>
+              <SkipForward size={14} />
+            </IconButton>
+          </div>
+          <LyricsDelayControl />
         </div>
       </div>
     </article>

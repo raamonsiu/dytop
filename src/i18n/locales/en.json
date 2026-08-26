@@ -29,6 +29,14 @@
     "adding": "…",
     "added": "Added to the queue."
   },
+  "lyrics": {
+    "loading": "Looking for lyrics…",
+    "notFound": "No lyrics for this track",
+    "error": "Could not fetch the lyrics",
+    "delay": "Sync offset",
+    "earlier": "Show lyrics earlier",
+    "later": "Show lyrics later"
+  },
   "errors": {
     "invalidUrl": "That is not a valid YouTube URL.",
     "player": {

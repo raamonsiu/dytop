@@ -29,6 +29,14 @@
     "adding": "…",
     "added": "Afegit a la cua."
   },
+  "lyrics": {
+    "loading": "Cercant la lletra…",
+    "notFound": "Sense lletra per a aquest tema",
+    "error": "No s'ha pogut obtenir la lletra",
+    "delay": "Ajust de sincronia",
+    "earlier": "Avançar la lletra",
+    "later": "Endarrerir la lletra"
+  },
   "errors": {
     "invalidUrl": "Aquesta no és una URL de YouTube vàlida.",
     "player": {

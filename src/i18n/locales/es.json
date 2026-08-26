@@ -29,6 +29,14 @@
     "adding": "…",
     "added": "Añadido a la cola."
   },
+  "lyrics": {
+    "loading": "Buscando letra…",
+    "notFound": "Sin letra para este tema",
+    "error": "No se pudo obtener la letra",
+    "delay": "Ajuste de sincronía",
+    "earlier": "Adelantar la letra",
+    "later": "Retrasar la letra"
+  },
   "errors": {
     "invalidUrl": "Esa no es una URL de YouTube válida.",
     "player": {
