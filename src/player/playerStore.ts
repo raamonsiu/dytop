@@ -32,14 +32,6 @@ export function setPlayerState(patch: Partial<PlayerState>): void {
   playerStore.set((prev) => ({ ...prev, ...patch }));
 }
 
-export function usePlaybackStatus(): PlaybackStatus {
-  return useStoreSelector(playerStore, (state) => state.status);
-}
-
-export function useDuration(): number {
-  return useStoreSelector(playerStore, (state) => state.duration);
-}
-
 export function usePlayerError(): string | null {
   return useStoreSelector(playerStore, (state) => state.errorKey);
 }

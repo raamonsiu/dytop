@@ -3,7 +3,7 @@ import { idbDelete, idbGetAll, idbPut, STORES } from "@/lib/idb";
 
 export type BackgroundKind = "image" | "video";
 
-/** As stored. The object URL is deliberately absent — see `BackgroundEntry`. */
+/** As stored. The object URL is deliberately absent, see `BackgroundEntry`. */
 export interface StoredBackground {
   id: string;
   kind: BackgroundKind;
@@ -50,7 +50,7 @@ export async function loadBackgrounds(): Promise<BackgroundEntry[]> {
  *
  * Size is checked up front rather than left to IndexedDB. A quota failure
  * surfaces asynchronously on the transaction, and a 200 MB video dropped in
- * would otherwise fail silently — the prototype's behaviour.
+ * would otherwise fail silently: the prototype's behaviour.
  */
 export async function addBackgrounds(files: File[]): Promise<AddBackgroundResult> {
   const added: BackgroundEntry[] = [];

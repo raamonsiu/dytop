@@ -6,7 +6,7 @@ import { THEME_TOKENS, type Theme } from "./tokens";
  *
  * Themes are applied per subtree rather than on `<html>` because both views can
  * exist in one session and must not fight over `:root`. Declarative inline
- * styles beat an imperative `applyTheme(el)` effect here — no ref, no effect
+ * styles beat an imperative `applyTheme(el)` effect here: no ref, no effect
  * ordering, and the vars are present on the very first paint.
  *
  * `accent` lands on `--accent-base`, not `--accent`: globals.css derives

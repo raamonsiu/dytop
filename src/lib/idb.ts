@@ -39,7 +39,7 @@ function openDatabase(): Promise<IDBDatabase> {
   return dbPromise;
 }
 
-/** Wraps a request in a promise that also fails when the transaction does —
+/** Wraps a request in a promise that also fails when the transaction does:
  * quota errors surface on the transaction, not the request. */
 function fromRequest<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {

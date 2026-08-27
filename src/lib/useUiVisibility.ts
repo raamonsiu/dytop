@@ -83,7 +83,7 @@ export function useUiVisibility(): UiVisibilityApi {
     let lastY: number | null = null;
 
     const handlePointerMove = (event: PointerEvent) => {
-      // Any direction counts, not just a trip to the top edge — reaching for
+      // Any direction counts, not just a trip to the top edge: reaching for
       // the mouse at all is the signal that someone wants the controls.
       if (lastX !== null && lastY !== null) {
         const travelled = Math.hypot(event.clientX - lastX, event.clientY - lastY);

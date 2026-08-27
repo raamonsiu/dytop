@@ -39,6 +39,7 @@ export function hydrateBackgrounds(): Promise<void> {
   return hydratePromise;
 }
 
+/** Switches the active background and persists the choice. */
 export function setActiveBackground(id: string | null): void {
   backgroundsStore.set((state) => ({ ...state, activeId: id }));
   setPref("activeBackgroundId", id);

@@ -69,7 +69,7 @@ export function setPref<K extends keyof Prefs>(key: K, value: Prefs[K]): void {
   try {
     localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(next));
   } catch {
-    // Out of quota or storage disabled — the in-memory value still applies for
+    // Out of quota or storage disabled, the in-memory value still applies for
     // this session, which is better than losing the interaction entirely.
   }
 }

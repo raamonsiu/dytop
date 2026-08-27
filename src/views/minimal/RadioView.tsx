@@ -40,14 +40,14 @@ export function RadioView() {
 
       {/*
         Collapses to nothing when the chrome hides, so the lyrics above drift
-        down into the freed space and settle in the middle of the view — the
+        down into the freed space and settle in the middle of the view: the
         transport is gone, so there is no reason to keep sitting above where it
         used to be.
 
         The grid-rows 1fr/0fr pair is what makes that animatable: `height: auto`
         is not a transitionable value, and a fixed pixel height would have to be
         guessed and would break the moment the card wraps or the short: variant
-        changes the padding. Slower than the fade on purpose — the point is
+        changes the padding. Slower than the fade on purpose: the point is
         drifting, not snapping.
       */}
       <div
@@ -66,8 +66,8 @@ export function RadioView() {
           <NowPlayingCard track={nowPlaying} />
           {/*
             Never hidden, only compacted. An earlier version dropped this on
-            short viewports, which also fired on zoom-in — zooming shrinks the
-            viewport in CSS pixels — so the only way to add a track vanished at
+            short viewports, which also fired on zoom-in: zooming shrinks the
+            viewport in CSS pixels, so the only way to add a track vanished at
             exactly the moment someone was trying to read the page more closely.
           */}
           <AddSongInline />

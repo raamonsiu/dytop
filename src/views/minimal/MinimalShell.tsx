@@ -15,7 +15,7 @@ import { MinimalNav } from "./MinimalNav";
  * dither backdrop and the progress ring.
  *
  * The backdrop sits here rather than inside either route so that switching
- * tabs doesn't unmount the canvas — remounting would drop the WebGL context and
+ * tabs doesn't unmount the canvas: remounting would drop the WebGL context and
  * restart the wave from zero on every navigation.
  */
 export function MinimalShell() {
@@ -31,13 +31,13 @@ export function MinimalShell() {
       {/*
         z-0 with the content above, never a negative z-index: [data-view] paints
         an opaque `background`, and a child at -z-10 sits behind its own
-        parent's background — which rendered the whole backdrop invisible even
+        parent's background, which rendered the whole backdrop invisible even
         though the canvas was drawing correctly.
       */}
       <div
         aria-hidden
         // overflow-hidden because the backdrop is deliberately laid out larger
-        // than this box before its inverse zoom shrinks it back — see
+        // than this box before its inverse zoom shrinks it back: see
         // DitherBackground.
         className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
         style={{ opacity: DITHER_CONFIG.opacity }}

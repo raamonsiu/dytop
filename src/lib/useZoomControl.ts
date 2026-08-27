@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { clamp } from "@/lib/clamp";
 import { createStore, useStore } from "./createStore";
 
 /**
@@ -6,7 +7,7 @@ import { createStore, useStore } from "./createStore";
  *
  * The floor is close to native because this UI is built on small mono labels:
  * much below it they stop being readable rather than merely looking compact.
- * The default deliberately sits well above the floor — the interface is meant
+ * The default deliberately sits well above the floor: the interface is meant
  * to be read across a room, not squinted at.
  */
 export const MIN_UI_SCALE = 0.9;
@@ -20,7 +21,7 @@ const STEP = 1.1;
  * The single source of UI scale.
  *
  * Published as a store because the dither backdrop has to counter-scale itself
- * against it — see DitherBackground.
+ * against it: see DitherBackground.
  */
 const uiScaleStore = createStore(DEFAULT_UI_SCALE);
 
@@ -31,13 +32,13 @@ export function useUiScale(): number {
 /**
  * Next scale for a zoom gesture, clamped.
  *
- * Multiplicative so each step feels the same size in both directions — a fixed
+ * Multiplicative so each step feels the same size in both directions: a fixed
  * additive step gets coarse when scaled down and sluggish when scaled up.
  * Pure and exported because browser zoom gestures can't be driven from a test.
  */
 export function nextScale(current: number, direction: "in" | "out"): number {
   const raw = direction === "in" ? current * STEP : current / STEP;
-  return Math.min(Math.max(raw, MIN_UI_SCALE), MAX_UI_SCALE);
+  return clamp(raw, MIN_UI_SCALE, MAX_UI_SCALE);
 }
 
 function applyScale(scale: number): void {
@@ -58,7 +59,7 @@ function applyScale(scale: number): void {
  * the display's own density, so there is no baseline to compare against.
  *
  * This inverts the approach. The zoom gestures are intercepted before the
- * browser acts on them, and the app applies its own scale within fixed bounds —
+ * browser acts on them, and the app applies its own scale within fixed bounds,
  * so the limit is enforced rather than chased.
  *
  * What this cannot cover: zoom set from the browser's own menu, or OS-level
@@ -101,7 +102,7 @@ export function useZoomControl(): void {
       }
     };
 
-    // passive: false is what makes preventDefault effective — wheel listeners
+    // passive: false is what makes preventDefault effective: wheel listeners
     // default to passive, and a passive listener cannot cancel the gesture.
     window.addEventListener("wheel", handleWheel, { passive: false });
     window.addEventListener("keydown", handleKeyDown);

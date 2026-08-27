@@ -1,27 +1,120 @@
+<div align="center">
+
 # DYTOP
 
-Reproductor ambient de YouTube con letras sincronizadas. Dos vistas sobre un
-único motor de reproducción:
+**An ambient YouTube player with synced lyrics.**
+No account. No server. No tracking.
 
-- **minimal** (`/`, `/history`) — fondo dither, tipografía monoespaciada, letras
-  con juego de opacidad. Sigue la línea del portfolio de
-  [D1ITO](https://d1ito.dev).
-- **legacy** (`/legacy`) — la vista del prototipo: fondos propios, color de
-  acento extraído de la imagen, anillo de progreso alrededor de la ventana.
+[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-4E1F6E?style=for-the-badge&logo=buymeacoffee&logoColor=white)](https://buymeacoffee.com/d1ito)
 
-No hay backend. Todo son APIs públicas sin clave: la IFrame API de YouTube para
-el audio, oEmbed para los metadatos y [lrclib](https://lrclib.net) para las
-letras.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](#docker)
 
-## Desarrollo
+</div>
+
+---
+
+## About DYTOP
+
+DYTOP turns a pasted YouTube link into an ambient listening session: a queue,
+a history, and lyrics that scroll in time with the track. There is no backend
+behind any of it, only public, keyless APIs, so there is nothing to sign up
+for and nothing of yours to store on a server.
+
+The app ships as **two views over one playback engine**:
+
+- **minimal** (`/`, `/history`) - a dark, monospaced interface with an
+  animated dither backdrop, in the visual language of the
+  [D1ITO](https://d1ito.dev) portfolio. Lyrics fade in and out on an opacity
+  ladder around the current line.
+- **legacy** (`/legacy`, `/legacy/history`) - the original single-file
+  prototype's look: your own uploaded backgrounds, an accent colour sampled
+  live from whatever image or video is showing, and a thin progress ring
+  traced around the edge of the window.
+
+Switching between them is instant and keeps playback running: the YouTube
+embed never remounts, no matter which view or route it's behind.
+
+> **1.0.0.** The player, both views, lyrics sync and background uploads are
+> all done and stable. Found something broken?
+> [Open an issue](https://github.com/raamonsiu/dytop/issues/new).
+
+---
+
+## Mockups
+
+<div align="center">
+  <img src="docs/screenshots/d1.png" width="45%" alt="Minimal view, with synced lyrics over the dither backdrop" />
+  <img src="docs/screenshots/legacy.png" width="45%" alt="Legacy view, with an uploaded background and the sampled accent colour" />
+</div>
+
+## Features
+
+### Playback
+
+- **Paste a URL, get a track** - `watch`, `youtu.be`, `/shorts/` and `/embed/`
+  links are all recognised. No search box: search needs an API key, and a
+  static SPA has nowhere safe to keep one.
+- **Metadata without a backend** - title, channel and thumbnail come from
+  YouTube's public oEmbed endpoint; no Data API, no quota, no key.
+- **A real queue** - history, now playing and upcoming, with drag-to-reorder,
+  jump-to-track, and a saved session restored (but not auto-played) on the
+  next visit.
+- **Scrubbable progress** everywhere: a slider in both views plus a
+  perimeter ring in legacy, all keyboard-accessible.
+
+### Lyrics
+
+- **Synced lyrics from [lrclib](https://lrclib.net)**, a free, keyless,
+  community-run database. Falls back to plain, unsynced text, or quietly
+  says there's nothing to show, since most pasted tracks have no lyrics at
+  all.
+- **A sync offset control** to nudge lyrics forward or backward in fractions
+  of a second, for the uploads whose intro throws the timing off.
+
+### Backgrounds (legacy view)
+
+- **Upload your own images or videos**, stored locally in IndexedDB, never
+  uploaded anywhere.
+- **A dynamic accent colour** sampled live from whatever background is on
+  screen, driving buttons, focus rings and the progress ring.
+- **Fixed, random or on-song-change rotation** between your uploads.
+
+### Interface
+
+- **Three languages** - English, Spanish and Catalan, picked up from the
+  browser and switchable at any time.
+- **Four visibility states** for the chrome - pinned, auto-hide, ring-only or
+  fully hidden - so the interface can get out of the way entirely.
+- **A custom zoom** that scales the whole UI independently of the browser,
+  with its own bounds tuned for the small mono labels this interface is built
+  on.
+- **Reduced-motion support**, following the system accessibility setting.
+
+---
+
+## Getting started
+
+Requires [Node.js](https://nodejs.org) 22+ and
+[pnpm](https://pnpm.io) (pinned via Corepack, see `packageManager` in
+`package.json`).
 
 ```bash
 pnpm install
 pnpm dev          # http://localhost:5173
-pnpm typecheck
-pnpm lint
-pnpm test
-pnpm build
+```
+
+### Development commands
+
+```bash
+pnpm typecheck    # tsc --noEmit
+pnpm lint         # eslint .
+pnpm test         # vitest run
+pnpm build        # typecheck + production build
 ```
 
 ## Docker
@@ -30,36 +123,95 @@ pnpm build
 docker compose up --build     # http://localhost:8080
 ```
 
-Imagen multi-stage: build con pnpm, servido por nginx. Sin Node en tiempo de
-ejecución.
+The image is multi-stage: dependencies and the production build happen in
+Node, but the image that actually runs is `nginx:alpine` serving the static
+output. There is no Node process, and no application server, at runtime.
+Security headers and a CSP scoped to exactly what the app needs (YouTube,
+lrclib, oEmbed) live in `docker/security-headers.conf`.
 
-## Estructura
+---
+
+## Project structure
 
 ```
 src/
-  themes/       tokens de diseño compartidos por ambas vistas
-  player/       motor de YouTube, reloj rAF, cola, controlador
-  lyrics/       parser LRC, cliente lrclib, estado
-  backgrounds/  IndexedDB, muestreo de accent, rotación
-  views/        minimal/ y legacy/
-  lib/          utilidades puras y hooks
+  themes/       design tokens shared by both views
+  player/       YouTube engine, rAF clock, queue, controller
+  lyrics/       LRC parser, lrclib client, sync state
+  backgrounds/  IndexedDB storage, accent sampling, rotation
+  views/        minimal/ and legacy/
+  lib/          pure utilities and hooks
 docs/
-  prototype.html   el prototipo original, intacto
-  PARITY.md        qué se mantuvo, qué mejoró y qué se desvió a propósito
+  prototype.html   the original single-file prototype, kept verbatim
+  PARITY.md        what was kept, what improved, and what diverged on purpose
 ```
 
-### Decisiones que conviene conocer antes de tocar nada
+### Worth knowing before you touch anything
 
-- **El iframe no se puede mover.** Vive en `PlayerHost`, montado por
-  `RootLayout` fuera del `<Outlet/>`. Reparentarlo en el DOM lo recarga y corta
-  la reproducción. Además `YT.Player` *reemplaza* el elemento que recibe, por
-  eso se le pasa un nodo creado a mano que React no gestiona.
-- **El tiempo no pasa por React.** `player/clock.ts` extrapola entre sondeos de
-  300 ms y entrega valores por frame a suscriptores que escriben directamente en
-  el DOM. Meterlo en estado re-renderizaría el árbol 60 veces por segundo.
-- **El accent es por subárbol.** `globals.css` deriva `--accent` de
-  `--accent-override` sobre `[data-view]`. El accent dinámico de legacy se
-  escribe en su propio shell; sobre `:root` se filtraría a la vista minimal al
-  navegar sin recargar.
-- **`three` solo lo carga minimal.** El componente Dither va en un chunk aparte
-  vía `React.lazy`; pesa más que todo el resto de la app junta.
+- **The iframe can't be moved.** It lives in `PlayerHost`, mounted by
+  `RootLayout` outside the `<Outlet/>`. Reparenting it in the DOM reloads it,
+  and `YT.Player` *replaces* whatever element it's handed, which is why it's
+  given a node created imperatively rather than one React renders.
+- **Playback time never enters React state.** `player/clock.ts` extrapolates
+  between 300ms polls and hands values to subscribers that write straight to
+  the DOM. Putting it in state would re-render the tree ~60 times a second.
+- **The accent is scoped per view.** `globals.css` derives `--accent` from
+  `--accent-override` on `[data-view]`. Legacy's dynamic accent is written to
+  its own shell node; on `:root` it would leak into minimal on client-side
+  navigation.
+- **Only minimal loads `three`.** The Dither component sits behind
+  `React.lazy`, in its own chunk, heavier than the rest of the app combined.
+
+---
+
+## Contributing
+
+Pull requests are welcome.
+
+- `pnpm typecheck`, `pnpm lint` and `pnpm test` must pass before you open a PR.
+- Match the conventions already in the code: JSDoc where it earns its place,
+  descriptive names over comments, no dead code.
+- Keep PRs small enough to review in one sitting.
+
+**Found a bug?**
+[Open an issue](https://github.com/raamonsiu/dytop/issues/new) with what you
+did, what you expected, and what happened instead.
+
+---
+
+## Privacy
+
+**DYTOP has no backend.** There is no account, no analytics, no crash
+reporting and no telemetry of any kind. What the app stores, it stores on
+your device.
+
+| Data | Where it lives | Leaves the device? |
+|---|---|---|
+| Queue, history, preferences | `localStorage` / IndexedDB | Never |
+| Uploaded background images and videos | IndexedDB, as blobs | Never |
+| Track title and artist guess | Sent to lrclib.net | Only to look up lyrics for that track |
+| Video ID | Sent to YouTube's oEmbed endpoint and IFrame API | Only to fetch metadata and play the video |
+
+Nothing else reaches the network. There is no first-party server for any of
+this to go through in the first place.
+
+---
+
+## License
+
+DYTOP is released under the [MIT License](LICENSE).
+
+In short: you may use, copy, modify and redistribute this code, including
+commercially, as long as the copyright notice and the licence text travel
+with it. It comes with no warranty of any kind.
+
+---
+
+<div align="center">
+
+Made with love by **D1ITO**
+
+[![GitHub](https://img.shields.io/badge/GitHub-raamonsiu-181717?logo=github&logoColor=white)](https://github.com/raamonsiu)
+[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/d1ito)
+
+</div>

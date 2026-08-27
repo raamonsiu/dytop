@@ -17,7 +17,7 @@ const ICONS: Record<UiVisibility, typeof Eye> = {
  * you were in, what the next one would be, or how to get back to a specific one
  * without clicking through the others.
  *
- * Stays on screen in every state — including `hidden` — because it is the only
+ * Stays on screen in every state, including `hidden`, because it is the only
  * way back from there.
  */
 export function UiVisibilityControl({

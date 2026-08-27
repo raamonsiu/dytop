@@ -9,7 +9,7 @@
  *
  * - `accentFactor` scales the theme accent *before* the shader. Push it too low
  *   and the 4-level Bayer quantisation plus the shader's own 0.2 bias collapse
- *   the entire field to black — at 0.42 nothing renders at all. It has to stay
+ *   the entire field to black: at 0.42 nothing renders at all. It has to stay
  *   high enough for the dither to land across several levels.
  * - `opacity` composites the finished layer over the background. This is the
  *   knob for "how loud", and the one to turn: at full strength the field is a

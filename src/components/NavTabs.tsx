@@ -26,7 +26,7 @@ function Tab({ to, label }: { to: string; label: string }) {
     <NavLink
       to={to}
       // `end` so "/" and "/legacy" don't stay highlighted while on their
-      // history child — NavLink matches by prefix otherwise.
+      // history child: NavLink matches by prefix otherwise.
       end
       className={({ isActive }) =>
         cn(

@@ -5,7 +5,7 @@ import type { ColorScheme, Theme, ViewName } from "./tokens";
  * two sites read as the same hand: near-black surfaces, a single purple accent,
  * a lime selection that's the accent's complement, and square corners.
  *
- * `legacy` keeps the prototype's own palette — warm off-white ink on an almost
+ * `legacy` keeps the prototype's own palette: warm off-white ink on an almost
  * black green, lime accent, rounded corners, frosted panels. It's a different
  * mood on purpose, not a drifted copy.
  */
@@ -66,10 +66,4 @@ export function resolveTheme(view: ViewName, scheme: ColorScheme): Theme {
     return THEMES[requested as ThemeName];
   }
   return THEMES[`${view}-dark`];
-}
-
-/** Whether a light palette exists for a view — drives showing the theme toggle
- * at all, so the UI can't offer a switch that does nothing. */
-export function hasLightTheme(view: ViewName): boolean {
-  return `${view}-light` in THEMES;
 }

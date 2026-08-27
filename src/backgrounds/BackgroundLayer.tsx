@@ -12,7 +12,7 @@ interface BackgroundLayerProps {
  * Renders the active background, crossfading between changes.
  *
  * Both the outgoing and incoming media are kept mounted for the length of the
- * fade — swapping the `src` of one element would show a hard cut, since the new
+ * fade: swapping the `src` of one element would show a hard cut, since the new
  * source paints only once decoded.
  */
 export function BackgroundLayer({ entry, mediaRef }: BackgroundLayerProps) {

@@ -18,7 +18,7 @@ function isSupported(value: string): value is AppLocale {
  * Picks a locale from the browser's preference list.
  *
  * Matches on the base language and ignores the region, so `es-AR`, `es-MX` and
- * `es-ES` all resolve to `es` — the app has no regional variants, and an exact
+ * `es-ES` all resolve to `es`: the app has no regional variants, and an exact
  * match would send most Spanish speakers to English.
  *
  * `navigator.languages` is ordered by preference, so the first supported entry

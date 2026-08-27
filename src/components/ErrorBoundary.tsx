@@ -14,7 +14,7 @@ interface ErrorBoundaryState {
 /**
  * Still a class: React has no hook equivalent for catching render errors.
  *
- * Used to keep decorative failures decorative — a WebGL context the browser
+ * Used to keep decorative failures decorative: a WebGL context the browser
  * refuses to give out should cost the backdrop, not the whole player.
  */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {

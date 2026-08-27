@@ -21,8 +21,8 @@ function ensureCanvas(): CanvasRenderingContext2D | null {
  * Samples an accent colour from an image or video element.
  *
  * Returns null rather than throwing when the frame can't be read. The common
- * cause is a tainted canvas — drawing cross-origin media makes `getImageData`
- * throw a SecurityError — and a background that can't be sampled should quietly
+ * cause is a tainted canvas: drawing cross-origin media makes `getImageData`
+ * throw a SecurityError, and a background that can't be sampled should quietly
  * leave the accent alone, not break the view.
  */
 export function sampleAccent(source: HTMLImageElement | HTMLVideoElement): Rgb | null {

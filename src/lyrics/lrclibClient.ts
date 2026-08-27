@@ -16,13 +16,13 @@ interface LrclibRecord {
 /**
  * Looks up lyrics for a track.
  *
- * lrclib is a public, unauthenticated, community-run database — no key, which
+ * lrclib is a public, unauthenticated, community-run database: no key, which
  * is what lets this stay backend-free, but also no SLA. "No lyrics" is a normal
  * outcome here, not an exception: most of what people paste has none, and the
  * caller renders that as a state rather than an error.
  *
  * Synced lyrics win over plain whenever any result has them, even if a
- * plain-only record ranked higher — timing is the whole point of the display.
+ * plain-only record ranked higher: timing is the whole point of the display.
  */
 export async function fetchLyrics(
   artist: string,

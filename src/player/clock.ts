@@ -77,7 +77,7 @@ playerStore.subscribe(sync);
  * Subscribes to playback time.
  *
  * Listeners are called on every animation frame and must write to the DOM
- * directly — setting React state here would re-render the tree ~60 times a
+ * directly: setting React state here would re-render the tree ~60 times a
  * second. See LinearProgress and PerimeterProgress for the pattern.
  */
 export function subscribeToTime(listener: TimeListener): () => void {

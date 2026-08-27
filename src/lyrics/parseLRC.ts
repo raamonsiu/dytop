@@ -18,8 +18,8 @@ const TIMESTAMP_PATTERN = /\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\]/g;
 /**
  * Parses an LRC document into timed lines, sorted by time.
  *
- * A line may carry several timestamps when the same words repeat — a chorus is
- * stored once and pointed at from every occurrence — so each timestamp becomes
+ * A line may carry several timestamps when the same words repeat: a chorus is
+ * stored once and pointed at from every occurrence, so each timestamp becomes
  * its own entry.
  *
  * Instrumental gaps arrive as a timestamp with no text. Those are kept, not

@@ -16,13 +16,13 @@ function asString(value: unknown): string | null {
  * Fetches title, channel and thumbnail for a video.
  *
  * oEmbed is public and unauthenticated, which is the whole reason this app
- * needs no backend and no API key — the Data API would require both, plus a
+ * needs no backend and no API key: the Data API would require both, plus a
  * quota. The trade-off is that it returns nothing else: no duration, no
  * artist/title split. Duration comes from the player once loaded, and the split
  * is guessed from the title.
  *
- * A failure is not exceptional — the video may be private, or the network may
- * be down — so this always resolves to a usable Track, falling back to the
+ * A failure is not exceptional: the video may be private, or the network may
+ * be down, so this always resolves to a usable Track, falling back to the
  * thumbnail URL that any valid id serves.
  */
 export async function fetchTrack(

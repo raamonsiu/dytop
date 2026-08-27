@@ -3,8 +3,8 @@
  * https://www.reactbits.dev/backgrounds/dither
  * https://github.com/DavidHDev/react-bits/blob/main/src/content/Backgrounds/Dither/Dither.jsx
  *
- * Kept in `vendor/` and left structurally faithful to the original — the two
- * shaders and the Bayer matrix are verbatim — so it can be re-synced upstream.
+ * Kept in `vendor/` and left structurally faithful to the original: the two
+ * shaders and the Bayer matrix are verbatim, so it can be re-synced upstream.
  * Local changes: TypeScript types, and the container class replaced with the
  * app's own styling.
  *
@@ -202,7 +202,7 @@ function DitheredWaves({
   const mouseRef = useRef(new THREE.Vector2());
   const { viewport, size, gl } = useThree();
 
-  /** Seed values only — see `liveUniforms` for why this object is not the one
+  /** Seed values only: see `liveUniforms` for why this object is not the one
    * the shader ends up reading. */
   const seedUniformsRef = useRef({
     time: new THREE.Uniform(0),
@@ -221,7 +221,7 @@ function DitheredWaves({
    *
    * THREE.ShaderMaterial deep-clones the uniforms it is constructed with
    * (UniformsUtils.clone), so the object handed to `<shaderMaterial uniforms>`
-   * is *not* the one the GPU reads — not even the individual Uniform instances
+   * is *not* the one the GPU reads, not even the individual Uniform instances
    * are shared. Upstream mutates its own object and, on this three version,
    * that writes to an orphan: the wave rendered its first frame and then froze
    * forever, with `time` visibly advancing in JS the whole time.

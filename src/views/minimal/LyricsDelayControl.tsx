@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { LYRICS_DELAY_STEP_SECONDS } from "@/constants/player";
+import { LYRICS_DELAY_STEP_SECONDS, shiftLyricsDelay } from "@/constants/player";
 import { cn } from "@/lib/cn";
 import { setPref, usePref } from "@/lib/prefs";
 import { useLyrics } from "@/lyrics/lyricsStore";
@@ -7,8 +7,8 @@ import { useLyrics } from "@/lyrics/lyricsStore";
 /**
  * Nudges lyric timing.
  *
- * Community-timed lyrics are often offset from a given upload — a video with a
- * few seconds of intro throws every line out by the same amount — so the fix is
+ * Community-timed lyrics are often offset from a given upload: a video with a
+ * few seconds of intro throws every line out by the same amount, so the fix is
  * a constant shift rather than anything per-line.
  *
  * Hidden unless synced lyrics are actually showing: there is nothing to shift
@@ -22,11 +22,7 @@ export function LyricsDelayControl() {
 
   if (lyrics.status !== "synced") return null;
 
-  const shift = (amount: number) => {
-    // Rounded because repeated 0.25 steps accumulate float noise, and the
-    // offset is rendered.
-    setPref("lyricsDelay", Math.round((delay + amount) * 100) / 100);
-  };
+  const shift = (amount: number) => setPref("lyricsDelay", shiftLyricsDelay(delay, amount));
 
   const buttonClasses =
     "px-1 transition-colors hover:text-accent focus-visible:outline focus-visible:outline-1 focus-visible:outline-accent";

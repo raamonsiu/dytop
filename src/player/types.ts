@@ -20,7 +20,7 @@ export interface Track {
  * Three lists rather than one array plus an index.
  *
  * Playback only ever moves an item between lists, so "what's next" and "what
- * already played" are never derived from arithmetic that can go out of range —
+ * already played" are never derived from arithmetic that can go out of range,
  * which is what made the prototype's drag-and-drop reordering safe.
  */
 export interface QueueState {

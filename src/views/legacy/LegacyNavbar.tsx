@@ -23,7 +23,7 @@ const PANEL_ICONS: Record<PanelId, typeof Plus> = {
 /**
  * Floating navbar, revealed by proximity to the top edge.
  *
- * `revealed` only controls presentation — it is not used to unmount, so a panel
+ * `revealed` only controls presentation, it is not used to unmount, so a panel
  * left open doesn't lose its state when the pointer wanders off.
  */
 export function LegacyNavbar({ revealed }: { revealed: boolean }) {

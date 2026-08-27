@@ -15,13 +15,18 @@ export const PLAYER_READY_TIMEOUT_MS = 4_000;
 /** Step for the lyrics sync nudge, in seconds. */
 export const LYRICS_DELAY_STEP_SECONDS = 0.25;
 
+/** Applies one nudge to the lyrics delay, rounded to avoid float noise from repeated steps. */
+export function shiftLyricsDelay(current: number, amount: number): number {
+  return Math.round((current + amount) * 100) / 100;
+}
+
 /** Random background rotation interval. */
 export const BACKGROUND_ROTATION_MS = 45_000;
 
 /** Background crossfade duration; mirrored in the CSS transition. */
 export const BACKGROUND_CROSSFADE_MS = 1_100;
 
-/** Video backgrounds are resampled for the accent colour at this rate — often
+/** Video backgrounds are resampled for the accent colour at this rate: often
  * enough to track a scene change, rare enough not to compete with playback. */
 export const VIDEO_ACCENT_SAMPLE_MS = 400;
 
@@ -33,7 +38,7 @@ export const MAX_BACKGROUND_BYTES = 80 * 1024 * 1024;
  * Anything longer than this is a live stream, not a track.
  *
  * YouTube caps regular uploads at 12 hours, but reports a duration for live
- * streams that grows without bound — a lofi radio stream answers with roughly
+ * streams that grows without bound: a lofi radio stream answers with roughly
  * 3.8 years. Treating that as a real duration gives a progress bar that never
  * moves and a "33778:11:52" readout.
  */

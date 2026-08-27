@@ -2,7 +2,7 @@
  * Formats seconds as m:ss, or h:mm:ss past an hour.
  *
  * Guards against the non-finite values the player reports before metadata
- * lands — getDuration() answers 0 or NaN while a video is still loading, and
+ * lands: getDuration() answers 0 or NaN while a video is still loading, and
  * "NaN:NaN" in the HUD is worse than "0:00".
  */
 export function formatTime(seconds: number): string {

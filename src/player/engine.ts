@@ -16,7 +16,7 @@ let ready = false;
 let initPromise: Promise<void> | null = null;
 
 /** Set by the controller. Kept as a hook rather than an import so the engine
- * stays a leaf module — the controller imports the engine, never the reverse. */
+ * stays a leaf module: the controller imports the engine, never the reverse. */
 let advanceHandler: (() => void) | null = null;
 
 /** A load requested before the embed was ready, replayed on ready. */
@@ -24,13 +24,14 @@ let pending: { videoId: string; autoplay: boolean } | null = null;
 
 let skipTimer: ReturnType<typeof setTimeout> | null = null;
 
+/** Registers the callback fired when the current track ends or is skipped. */
 export function onAdvanceRequested(handler: () => void): void {
   advanceHandler = handler;
 }
 
 /**
  * The IFrame API sometimes reports UNSTARTED/CUED after a load with the embed
- * muted — a legacy of autoplay policies. The prototype re-asserted volume at
+ * muted, a legacy of autoplay policies. The prototype re-asserted volume at
  * every such transition; so does this.
  */
 function forceAudible(): void {
@@ -130,10 +131,7 @@ export function initEngine(mount: HTMLElement): Promise<void> {
   return initPromise;
 }
 
-export function isReady(): boolean {
-  return ready;
-}
-
+/** Loads a video, playing or just cueing it. Queues the request if the embed isn't ready yet. */
 export function load(videoId: string, autoplay: boolean): void {
   if (skipTimer) {
     clearTimeout(skipTimer);
@@ -170,7 +168,7 @@ export function seek(seconds: number): void {
 }
 
 /** Reads straight from the embed. Called by the clock on a timer, never during
- * render — it's a synchronous cross-frame call. */
+ * render: it's a synchronous cross-frame call. */
 export function getCurrentTime(): number {
   try {
     return player?.getCurrentTime() ?? 0;

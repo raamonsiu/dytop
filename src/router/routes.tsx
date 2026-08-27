@@ -13,7 +13,7 @@ import { RootLayout } from "./RootLayout";
  *
  * - RootLayout owns the player, so it must sit above every route.
  * - MinimalShell owns the minimal palette and nav, shared by radio and history,
- *   so those two are its children rather than siblings — otherwise the backdrop
+ *   so those two are its children rather than siblings, otherwise the backdrop
  *   would remount (and the dither restart) on every tab switch.
  */
 export const router = createBrowserRouter([

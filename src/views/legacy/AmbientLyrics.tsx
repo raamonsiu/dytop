@@ -1,37 +1,26 @@
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import { usePref } from "@/lib/prefs";
-import { findActiveLine } from "@/lyrics/findActiveLine";
+import { useActiveLyricsLine } from "@/lyrics/useActiveLyricsLine";
 import { useCentredColumn } from "@/lyrics/useCentredColumn";
 import { useLyrics } from "@/lyrics/lyricsStore";
-import { subscribeToTime } from "@/player/clock";
 
 /**
  * Legacy's lyric display: large, centred, and scaled rather than the minimal
- * view's flat opacity ladder — this is the "look at the screen" mode.
+ * view's flat opacity ladder: this is the "look at the screen" mode.
  */
 export function AmbientLyrics() {
   const { t } = useTranslation();
   const lyrics = useLyrics();
   const delay = usePref("lyricsDelay");
   const enabled = usePref("lyricsVisible");
-  const [activeIndex, setActiveIndex] = useState(-1);
 
   const lines = lyrics.status === "synced" ? lyrics.lines : null;
+  const activeIndex = useActiveLyricsLine(lines, delay, enabled);
   const { columnRef, activeLineRef } = useCentredColumn<
     HTMLDivElement,
     HTMLParagraphElement
   >([activeIndex, lines, enabled]);
-
-  useEffect(() => {
-    if (!lines || !enabled) return;
-
-    return subscribeToTime(({ current }) => {
-      const next = findActiveLine(lines, current + delay);
-      setActiveIndex((previous) => (previous === next ? previous : next));
-    });
-  }, [lines, delay, enabled]);
 
   if (!enabled || lyrics.status === "idle") return null;
 

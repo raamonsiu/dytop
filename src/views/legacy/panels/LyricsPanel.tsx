@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { LYRICS_DELAY_STEP_SECONDS } from "@/constants/player";
+import { LYRICS_DELAY_STEP_SECONDS, shiftLyricsDelay } from "@/constants/player";
 import { cn } from "@/lib/cn";
 import { setPref, usePref } from "@/lib/prefs";
 
@@ -7,7 +7,7 @@ import { setPref, usePref } from "@/lib/prefs";
  * Lyrics visibility and sync offset.
  *
  * Community-timed lyrics are frequently offset from a given upload by a
- * constant amount — an intro of a few seconds throws every line out equally —
+ * constant amount: an intro of a few seconds throws every line out equally,
  * so a single shift is the right correction.
  */
 export function LyricsPanel() {
@@ -15,8 +15,7 @@ export function LyricsPanel() {
   const visible = usePref("lyricsVisible");
   const delay = usePref("lyricsDelay");
 
-  const shift = (amount: number) =>
-    setPref("lyricsDelay", Math.round((delay + amount) * 100) / 100);
+  const shift = (amount: number) => setPref("lyricsDelay", shiftLyricsDelay(delay, amount));
 
   return (
     <div className="flex flex-col gap-4">

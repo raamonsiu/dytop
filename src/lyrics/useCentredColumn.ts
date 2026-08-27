@@ -11,7 +11,7 @@ interface CentredColumn<C extends HTMLElement, L extends HTMLElement> {
  * Keeps the focused lyric line at the vertical centre of its container.
  *
  * The column's own top edge sits at the container's midpoint (`top-1/2`), so
- * centring a line means pulling it up by its own offset — nothing else. An
+ * centring a line means pulling it up by its own offset, nothing else. An
  * earlier version also subtracted half the container height, which pushed the
  * whole column half a screen down and out of view.
  *

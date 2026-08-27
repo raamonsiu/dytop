@@ -8,7 +8,7 @@ import { useHistory } from "@/player/queueStore";
  * Recently played, newest first.
  *
  * Shared by both views because the data and the interaction are identical; only
- * the skin differs, which is what `rounded` carries — legacy is soft-cornered
+ * the skin differs, which is what `rounded` carries: legacy is soft-cornered
  * and frosted, D1 is square and flat.
  */
 export function HistoryList({ rounded = false }: { rounded?: boolean }) {

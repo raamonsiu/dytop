@@ -1,42 +1,11 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
-import { useTransientMessage } from "@/lib/useTransientMessage";
-import { useChromeHold } from "@/lib/useUiVisibility";
-import { addTrackByUrl } from "@/player/controller";
+import { useAddSongForm } from "@/lib/useAddSongForm";
 
 export function AddSongPanel() {
   const { t } = useTranslation();
-  const [url, setUrl] = useState("");
-  const [pending, setPending] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const {
-    message: feedback,
-    show,
-    clear,
-  } = useTransientMessage<{ ok: boolean; key: string }>();
-
-  // The legacy chrome auto-hides too, and the panel lives inside it — losing a
-  // half-typed URL to a timer would be just as bad here.
-  useChromeHold(focused || url.trim().length > 0);
-
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    if (!url.trim() || pending) return;
-
-    setPending(true);
-    clear();
-    const result = await addTrackByUrl(url);
-    setPending(false);
-
-    if (result.ok) {
-      setUrl("");
-      show({ ok: true, key: "player.added" });
-    } else {
-      show({ ok: false, key: "errors.invalidUrl" });
-    }
-  }
+  const { url, setUrl, pending, setFocused, feedback, handleSubmit } = useAddSongForm();
 
   return (
     <form onSubmit={handleSubmit}>

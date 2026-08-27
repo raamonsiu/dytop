@@ -40,7 +40,7 @@ export function initPlayer(mount: HTMLElement): Promise<void> {
   if (initPromise) return initPromise;
 
   // Lyrics follow the queue rather than being fetched at each call site, so
-  // every path that changes the track — advance, jump, restore, error skip —
+  // every path that changes the track, advance, jump, restore, error skip,
   // gets them without remembering to ask.
   let lastTrackId: string | null = null;
   queueStore.subscribe(() => {
@@ -86,6 +86,7 @@ export async function addTrackByUrl(url: string): Promise<AddTrackResult> {
   return { ok: true, track };
 }
 
+/** Pauses if currently playing or buffering, otherwise resumes. */
 export function togglePlayPause(): void {
   const { status } = playerStore.get();
   if (status === "playing" || status === "buffering") {
@@ -95,6 +96,7 @@ export function togglePlayPause(): void {
   }
 }
 
+/** Advances the queue and loads the next track, or goes idle when it's empty. */
 export function playNext(): void {
   const next = advance();
   if (next) {
@@ -122,6 +124,7 @@ export function playPrevious(): void {
   if (previous) load(previous.videoId, true);
 }
 
+/** Jumps to a specific queue entry and starts loading it. */
 export function playTrack(trackId: string): void {
   const track = jumpTo(trackId);
   if (track) load(track.videoId, true);

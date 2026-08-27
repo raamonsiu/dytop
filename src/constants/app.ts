@@ -1,5 +1,3 @@
-export const APP_NAME = "DYTOP";
-
 /** Single source of truth for paths, so links and the startup redirect can't
  * drift from the route table. */
 export const ROUTES = {
@@ -33,7 +31,7 @@ export type BackgroundMode = (typeof BACKGROUND_MODES)[number];
  * the prototype's reveal-on-approach behaviour, `pinned` keeps everything put
  * for anyone who finds that jumpy.
  *
- * Ordered deliberately — the control renders them in this sequence.
+ * Ordered deliberately: the control renders them in this sequence.
  */
 export const UI_VISIBILITY_STATES = [
   "pinned",
@@ -49,7 +47,7 @@ export const DEFAULT_UI_VISIBILITY: UiVisibility = "auto";
  * Values written by earlier versions, mapped to their closest equivalent.
  *
  * Preferences outlive releases, and an unrecognised value would otherwise leave
- * the UI in a state no control can represent — visibly stuck, with no way back.
+ * the UI in a state no control can represent: visibly stuck, with no way back.
  */
 const LEGACY_UI_VISIBILITY: Record<string, UiVisibility> = {
   visible: "auto",
@@ -57,6 +55,7 @@ const LEGACY_UI_VISIBILITY: Record<string, UiVisibility> = {
   "hidden-partial": "ring-only",
 };
 
+/** Coerces a stored value to a valid visibility state, mapping legacy names and falling back to the default. */
 export function normalizeUiVisibility(value: unknown): UiVisibility {
   if (typeof value !== "string") return DEFAULT_UI_VISIBILITY;
   if ((UI_VISIBILITY_STATES as readonly string[]).includes(value)) {

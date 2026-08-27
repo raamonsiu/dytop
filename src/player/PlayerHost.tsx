@@ -9,8 +9,8 @@ import { initPlayer } from "./controller";
  * reloads it, which would restart the video, so this element must not move.
  *
  * The player is audio-only here: the visuals are the app's own. Rather than
- * `display: none` — which some browsers treat as reason to throttle or refuse
- * playback — it's pushed offscreen at 1x1, as the prototype did.
+ * `display: none`, which some browsers treat as reason to throttle or refuse
+ * playback, it's pushed offscreen at 1x1, as the prototype did.
  */
 export function PlayerHost() {
   const hostRef = useRef<HTMLDivElement>(null);

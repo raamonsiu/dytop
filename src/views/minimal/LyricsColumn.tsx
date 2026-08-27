@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import { usePref } from "@/lib/prefs";
-import { findActiveLine } from "@/lyrics/findActiveLine";
+import { useActiveLyricsLine } from "@/lyrics/useActiveLyricsLine";
 import { useCentredColumn } from "@/lyrics/useCentredColumn";
 import { useLyrics } from "@/lyrics/lyricsStore";
-import { subscribeToTime } from "@/player/clock";
 
 /**
  * Opacity by distance from the current line. The active line is the only fully
@@ -24,28 +22,13 @@ export function LyricsColumn() {
   const { t } = useTranslation();
   const lyrics = useLyrics();
   const delay = usePref("lyricsDelay");
-  const [activeIndex, setActiveIndex] = useState(-1);
 
   const lines = lyrics.status === "synced" ? lyrics.lines : null;
+  const activeIndex = useActiveLyricsLine(lines, delay);
   const { columnRef, activeLineRef } = useCentredColumn<
     HTMLDivElement,
     HTMLParagraphElement
   >([activeIndex, lines]);
-
-  useEffect(() => {
-    // No reset when there are no lines: the synced column isn't rendered in
-    // that case, and subscribeToTime invokes its listener immediately, so a new
-    // document recomputes the index in this same commit rather than showing a
-    // stale highlight for a frame.
-    if (!lines) return;
-
-    return subscribeToTime(({ current }) => {
-      const next = findActiveLine(lines, current + delay);
-      // The clock fires every frame but the line changes every few seconds, so
-      // state is only touched on an actual transition.
-      setActiveIndex((previous) => (previous === next ? previous : next));
-    });
-  }, [lines, delay]);
 
   if (lyrics.status === "idle") return null;
 

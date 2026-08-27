@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { clamp } from "@/lib/clamp";
 import { cn } from "@/lib/cn";
 import { formatTime } from "@/lib/format";
 import { subscribeToTime } from "@/player/clock";
@@ -19,7 +20,7 @@ interface ProgressSliderProps {
  * Scrubbable playback position.
  *
  * The visible bar stays thin, but the pointer target is the full padded height
- * around it — a 1px line is close to impossible to hit deliberately, and
+ * around it: a 1px line is close to impossible to hit deliberately, and
  * widening the line itself would wreck the restraint of the minimal view. The
  * padding is the hit area; the bar is only the paint.
  *
@@ -41,7 +42,7 @@ export function ProgressSlider({ className, thick = false }: ProgressSliderProps
 
   const paint = (ratio: number) => {
     if (fillRef.current) {
-      fillRef.current.style.transform = `scaleX(${Math.min(Math.max(ratio, 0), 1)})`;
+      fillRef.current.style.transform = `scaleX(${clamp(ratio, 0, 1)})`;
     }
   };
 
@@ -70,7 +71,7 @@ export function ProgressSlider({ className, thick = false }: ProgressSliderProps
     if (!track || durationRef.current <= 0) return null;
     const { left, width } = track.getBoundingClientRect();
     if (width === 0) return null;
-    return Math.min(Math.max((clientX - left) / width, 0), 1);
+    return clamp((clientX - left) / width, 0, 1);
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -80,7 +81,7 @@ export function ProgressSlider({ className, thick = false }: ProgressSliderProps
     draggingRef.current = true;
     paint(ratio);
     // Capture so the drag keeps tracking after the pointer leaves the element,
-    // which it will — the bar is a few pixels tall and hands are not precise.
+    // which it will: the bar is a few pixels tall and hands are not precise.
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
@@ -102,7 +103,7 @@ export function ProgressSlider({ className, thick = false }: ProgressSliderProps
   const nudge = (seconds: number) => {
     const duration = durationRef.current;
     if (duration <= 0) return;
-    const next = Math.min(Math.max(currentRef.current + seconds, 0), duration);
+    const next = clamp(currentRef.current + seconds, 0, duration);
     paint(next / duration);
     seekTo(next);
   };

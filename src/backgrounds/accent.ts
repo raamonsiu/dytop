@@ -4,11 +4,7 @@ export interface Rgb {
   b: number;
 }
 
-/** Used when nothing can be sampled: a tainted canvas, a video that hasn't
- * decoded a frame yet, or a fully transparent image. */
-export const FALLBACK_ACCENT: Rgb = { r: 200, g: 224, b: 106 };
-
-/** Downscale target for sampling. 48×48 is 2304 pixels — enough to find the
+/** Downscale target for sampling. 48×48 is 2304 pixels: enough to find the
  * dominant colour, small enough to redo several times a second for video. */
 export const SAMPLE_SIZE = 48;
 
@@ -87,7 +83,7 @@ export function pickAccent(data: Uint8ClampedArray): Rgb | null {
 /**
  * Forces a sampled colour into a range that works as UI text and glow.
  *
- * Hue is kept — that's the part that ties the interface to the image — while
+ * Hue is kept: that's the part that ties the interface to the image, while
  * saturation gets a floor and lightness is pinned. Without this, a background
  * that's mostly dark navy yields an accent invisible against the panels.
  */

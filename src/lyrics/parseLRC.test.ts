@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseLRC } from "./parseLRC";
 
-// Placeholder text throughout — the parser cares about timestamps, not words.
+// Placeholder text throughout: the parser cares about timestamps, not words.
 
 describe("parseLRC", () => {
   it("parses timestamped lines in order", () => {

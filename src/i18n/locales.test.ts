@@ -36,7 +36,7 @@ describe("locale files", () => {
 
   it.each(["es", "ca"])("%s defines exactly the same keys as en", (locale) => {
     // A missing key silently falls back to English at runtime, so nothing
-    // breaks and nobody notices — which is why this is a test.
+    // breaks and nobody notices, which is why this is a test.
     expect(keyPaths(LOCALES[locale] as Json).sort()).toEqual(reference);
   });
 

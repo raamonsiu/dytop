@@ -2,7 +2,7 @@ export type RgbTriplet = [number, number, number];
 
 /**
  * Parses `#rgb` or `#rrggbb` into components in the 0..1 range that WebGL
- * shaders expect. Returns null for anything else — including the rgba() values
+ * shaders expect. Returns null for anything else, including the rgba() values
  * the legacy palette uses for its glass tokens, which have no business being
  * fed to a shader.
  */

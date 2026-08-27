@@ -38,6 +38,8 @@ describe("extractYouTubeId", () => {
     ["an id that is too short", "https://youtu.be/abc"],
     ["an id that is too long", `https://youtu.be/${ID}EXTRA`],
     ["an id with invalid characters", "https://youtu.be/abcdefg!hij"],
+    ["a lookalike host", `https://evil-youtube.com/watch?v=${ID}`],
+    ["a lookalike short host", `https://notyoutu.be/${ID}`],
   ])("returns null for %s", (_label, url) => {
     expect(extractYouTubeId(url)).toBeNull();
   });

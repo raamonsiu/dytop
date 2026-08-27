@@ -3,7 +3,7 @@
  *
  * Declaring the names as a tuple rather than an interface means `Theme` is a
  * total map: adding a token here breaks every theme that doesn't define it,
- * which is the point — a half-filled palette should not typecheck.
+ * which is the point: a half-filled palette should not typecheck.
  *
  * Values are raw CSS, not parsed colours, so a token can be a hex, an rgba()
  * or a length (`radius`) without a second representation to keep in sync.
@@ -23,7 +23,7 @@ export const THEME_TOKENS = [
   "selection-foreground",
   /** Corner rounding for the whole view: 0 in minimal, 14px in legacy. */
   "radius",
-  /** Translucent panel fills. Minimal sets these opaque — it has no glass. */
+  /** Translucent panel fills. Minimal sets these opaque: it has no glass. */
   "glass",
   "glass-strong",
   "glass-border",

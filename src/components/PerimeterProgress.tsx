@@ -25,7 +25,7 @@ export function PerimeterProgress({ visible }: { visible: boolean }) {
       // Measured from the element rather than window.innerWidth: the root is
       // counter-scaled with CSS zoom to resist zoom-out (useZoomCompensation),
       // and under that the window's CSS pixels no longer match this element's
-      // own coordinate space — the ring would be drawn to the wrong size.
+      // own coordinate space, the ring would be drawn to the wrong size.
       const { width, height } = svg.getBoundingClientRect();
       const geometry = perimeterGeometry(width, height, ratioRef.current);
 
@@ -55,7 +55,7 @@ export function PerimeterProgress({ visible }: { visible: boolean }) {
     });
 
     // Redraws whenever its own box changes: window resize, the zoom
-    // compensation kicking in, or any other reflow — including while playback
+    // compensation kicking in, or any other reflow, including while playback
     // is paused and the clock is quiet.
     const observer = new ResizeObserver(draw);
     if (svgRef.current) observer.observe(svgRef.current);

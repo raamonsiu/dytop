@@ -26,7 +26,7 @@ function update(next: QueueState): void {
   persist();
 }
 
-/** Restores the saved queue. Playback is not resumed — see controller. */
+/** Restores the saved queue. Playback is not resumed: see controller. */
 export async function hydrateQueue(): Promise<QueueState> {
   const saved = await readState<QueueState>(QUEUE_STATE_KEY).catch(() => undefined);
   if (!saved) return EMPTY;
@@ -131,10 +131,6 @@ export function reorderUpcoming(fromIndex: number, toIndex: number): void {
   if (!moved) return;
   upcoming.splice(toIndex, 0, moved);
   update({ ...state, upcoming });
-}
-
-export function clearHistory(): void {
-  update({ ...queueStore.get(), history: [] });
 }
 
 function pushHistory(history: Track[], track: Track | null): Track[] {

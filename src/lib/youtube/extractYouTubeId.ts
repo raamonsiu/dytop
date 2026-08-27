@@ -1,6 +1,11 @@
 /** YouTube video ids are always 11 chars of the URL-safe base64 alphabet. */
 const VIDEO_ID_PATTERN = /^[\w-]{11}$/;
 
+/** True for `base` itself or any of its subdomains, never a lookalike like `evil-youtube.com`. */
+function isHostOrSubdomain(hostname: string, base: string): boolean {
+  return hostname === base || hostname.endsWith(`.${base}`);
+}
+
 /**
  * Pulls the video id out of any of the four URL shapes YouTube hands out:
  * `watch?v=`, `youtu.be/`, `/shorts/` and `/embed/`.
@@ -21,9 +26,9 @@ export function extractYouTubeId(url: string): string | null {
   const { hostname, pathname, searchParams } = parsed;
   let candidate: string | null = null;
 
-  if (hostname.endsWith("youtu.be")) {
+  if (isHostOrSubdomain(hostname, "youtu.be")) {
     candidate = pathname.slice(1).split("/")[0] ?? null;
-  } else if (hostname.endsWith("youtube.com") || hostname.endsWith("youtube-nocookie.com")) {
+  } else if (isHostOrSubdomain(hostname, "youtube.com") || isHostOrSubdomain(hostname, "youtube-nocookie.com")) {
     if (pathname === "/watch") {
       candidate = searchParams.get("v");
     } else if (pathname.startsWith("/shorts/") || pathname.startsWith("/embed/")) {

@@ -14,7 +14,7 @@ export interface Store<T> {
  * external store lets each component subscribe to just the slice it draws.
  *
  * Note this is for *discrete* state (track, playing, queue). Playback time is
- * not state — see player/clock.ts, which writes to the DOM directly.
+ * not state: see player/clock.ts, which writes to the DOM directly.
  */
 export function createStore<T>(initial: T): Store<T> {
   let value = initial;
@@ -44,7 +44,7 @@ export function useStore<T>(store: Store<T>): T {
 /**
  * Subscribes to a slice.
  *
- * The selector must return a primitive or a referentially stable value —
+ * The selector must return a primitive or a referentially stable value:
  * returning a fresh object or array every call makes React loop, because it
  * compares snapshots with Object.is.
  */

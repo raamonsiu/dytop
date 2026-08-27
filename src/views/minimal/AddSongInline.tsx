@@ -1,14 +1,6 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
-import { useTransientMessage } from "@/lib/useTransientMessage";
-import { useChromeHold } from "@/lib/useUiVisibility";
-import { addTrackByUrl } from "@/player/controller";
-
-interface Feedback {
-  kind: "ok" | "error";
-  key: string;
-}
+import { useAddSongForm } from "@/lib/useAddSongForm";
 
 /**
  * The only way tracks enter the app: paste a YouTube URL.
@@ -17,38 +9,14 @@ interface Feedback {
  * which in a static SPA means shipping that key in the bundle. oEmbed covers
  * metadata without either.
  *
- * Styled as a terminal prompt rather than a web form — square, monospaced, with
+ * Styled as a terminal prompt rather than a web form: square, monospaced, with
  * a blinking caret and a wide-tracked label. It's the one input in the view, so
  * it carries the D1 language instead of hiding from it.
  */
 export function AddSongInline() {
   const { t } = useTranslation();
-  const [url, setUrl] = useState("");
-  const [pending, setPending] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const { message: feedback, show, clear } = useTransientMessage<Feedback>();
-
-  // Keeps the chrome on screen while there is anything in progress here.
-  // Auto-hide taking the field away mid-URL is the worst thing this view could
-  // do, and a half-typed URL is still in progress after focus moves elsewhere.
-  useChromeHold(focused || url.trim().length > 0);
-
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    if (!url.trim() || pending) return;
-
-    setPending(true);
-    clear();
-    const result = await addTrackByUrl(url);
-    setPending(false);
-
-    if (result.ok) {
-      setUrl("");
-      show({ kind: "ok", key: "player.added" });
-    } else {
-      show({ kind: "error", key: "errors.invalidUrl" });
-    }
-  }
+  const { url, setUrl, pending, focused, setFocused, feedback, handleSubmit } =
+    useAddSongForm();
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-xl">
@@ -87,7 +55,7 @@ export function AddSongInline() {
             "min-w-0 flex-1 bg-transparent py-2.5 pr-3 font-mono text-xs tracking-wide",
             // The accent token, not the foreground: what you type reads as part
             // of the theme. Explicit because form controls don't inherit the
-            // page's colour on their own — without it the URL fell back to the
+            // page's colour on their own: without it the URL fell back to the
             // browser's default black on a near-black field.
             // The placeholder is the same hue at low alpha, so it recedes
             // without introducing a second colour.
@@ -121,7 +89,7 @@ export function AddSongInline() {
             role="status"
             className={cn(
               "text-[11px] uppercase tracking-widest",
-              feedback.kind === "ok" ? "text-success" : "text-danger",
+              feedback.ok ? "text-success" : "text-danger",
             )}
           >
             {t(feedback.key)}

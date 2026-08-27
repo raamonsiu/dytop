@@ -1,3 +1,5 @@
+import { clamp } from "@/lib/clamp";
+
 /** Half the stroke width, so the stroke sits flush against the viewport edge
  * instead of being clipped in half by it. */
 export const PERIMETER_INSET = 1.5;
@@ -37,7 +39,7 @@ export function perimeterGeometry(
   const perimeter = 2 * (innerWidth + innerHeight);
   const topHalf = innerWidth / 2;
 
-  const clamped = Math.min(Math.max(ratio, 0), 1);
+  const clamped = clamp(ratio, 0, 1);
   const filled = perimeter * clamped;
 
   return {

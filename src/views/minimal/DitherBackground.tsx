@@ -9,7 +9,7 @@ import { resolveTheme } from "@/themes/themes";
 
 /**
  * Loaded on demand. This one import is what pulls in three, react-three-fiber
- * and postprocessing — more bytes than the rest of the app combined — and the
+ * and postprocessing, more bytes than the rest of the app combined, and the
  * legacy view must never pay for it.
  */
 const Dither = lazy(() => import("./vendor/Dither"));
@@ -37,7 +37,7 @@ export function DitherBackground() {
     <div
       /*
        * Cancels the root's UI zoom so the backdrop always renders at native
-       * scale — it is a backdrop, and should sit still while the interface
+       * scale: it is a backdrop, and should sit still while the interface
        * around it grows.
        *
        * Viewport units are *not* affected by CSS zoom, so `100vw/100vh` stay

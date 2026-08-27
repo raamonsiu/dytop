@@ -27,7 +27,7 @@ side by side.
 | Jump to any track from any section | ✅ | Single click, see deviation below |
 | Reorder upcoming by drag | ⚠️ | **Deviation**: dragging is armed from an explicit grip handle. In the prototype rows were both `draggable` and `dblclick`-able, and some browsers fire `dragstart` before the second click completes, making the jump gesture unreliable |
 | Jump by double click | ⚠️ | **Deviation**: single click, for the same reason |
-| Queue survives reload | ✅ | IndexedDB, restored paused — browsers reject autoplay without a gesture |
+| Queue survives reload | ✅ | IndexedDB, restored paused: browsers reject autoplay without a gesture |
 
 ## Lyrics
 

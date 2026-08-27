@@ -38,7 +38,7 @@ export function useDynamicAccent(
       if (cancelled || !media) return;
       const accent = sampleAccent(media);
       // A failed sample keeps the previous accent rather than snapping to a
-      // fallback — a single undecoded video frame shouldn't flash the UI.
+      // fallback: a single undecoded video frame shouldn't flash the UI.
       if (accent) shell.style.setProperty("--accent-override", toCssRgb(accent));
     };
 

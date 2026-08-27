@@ -3,7 +3,7 @@ export interface TitleGuess {
   title: string;
 }
 
-/** Only bracketed groups that look like upload noise are stripped — a bare
+/** Only bracketed groups that look like upload noise are stripped: a bare
  * `(Live)` or `(feat. X)` is part of the title and must survive, because it
  * changes which recording the lyrics provider matches. */
 const NOISE_PATTERN =

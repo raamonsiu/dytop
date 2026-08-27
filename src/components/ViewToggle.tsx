@@ -13,7 +13,7 @@ interface ViewToggleProps {
 
 /**
  * Switches visual language. Records the choice so a cold start comes back to
- * the same place — see RootLayout's startup restore.
+ * the same place: see RootLayout's startup restore.
  */
 export function ViewToggle({ current, className }: ViewToggleProps) {
   const { t } = useTranslation();

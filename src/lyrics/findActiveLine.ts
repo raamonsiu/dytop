@@ -7,7 +7,7 @@ import type { LyricLine } from "./parseLRC";
  * Binary search rather than a scan: this runs on every animation frame, and
  * lyric documents routinely carry a few hundred lines.
  *
- * The active line is the last one whose timestamp has passed — lines have a
+ * The active line is the last one whose timestamp has passed: lines have a
  * start but no end, so a line stays current until the next begins.
  */
 export function findActiveLine(lines: LyricLine[], time: number): number {
