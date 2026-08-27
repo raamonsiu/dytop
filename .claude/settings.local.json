@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(find /home/d1ito/Projects/WEB/D1ITO -type f -name \"tailwind.config.*\" 2>/dev/null)",
-      "Bash(curl -s \"https://raw.githubusercontent.com/DavidHDev/react-bits/main/src/content/Backgrounds/Dither/Dither.jsx\")"
-    ]
-  }
-}
