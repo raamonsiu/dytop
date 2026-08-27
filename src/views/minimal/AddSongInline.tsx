@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import { useTransientMessage } from "@/lib/useTransientMessage";
+import { useChromeHold } from "@/lib/useUiVisibility";
 import { addTrackByUrl } from "@/player/controller";
 
 interface Feedback {
@@ -26,6 +27,11 @@ export function AddSongInline() {
   const [pending, setPending] = useState(false);
   const [focused, setFocused] = useState(false);
   const { message: feedback, show, clear } = useTransientMessage<Feedback>();
+
+  // Keeps the chrome on screen while there is anything in progress here.
+  // Auto-hide taking the field away mid-URL is the worst thing this view could
+  // do, and a half-typed URL is still in progress after focus moves elsewhere.
+  useChromeHold(focused || url.trim().length > 0);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -79,11 +85,14 @@ export function AddSongInline() {
           aria-label={t("player.pasteUrl")}
           className={cn(
             "min-w-0 flex-1 bg-transparent py-2.5 pr-3 font-mono text-xs tracking-wide",
-            // Explicit rather than inherited: form controls don't take the
-            // page's colour on their own, so without this the typed URL fell
-            // back to the browser's default black on a near-black field.
-            "text-foreground caret-accent",
-            "outline-none placeholder:uppercase placeholder:tracking-widest placeholder:text-muted-foreground/45",
+            // The accent token, not the foreground: what you type reads as part
+            // of the theme. Explicit because form controls don't inherit the
+            // page's colour on their own — without it the URL fell back to the
+            // browser's default black on a near-black field.
+            // The placeholder is the same hue at low alpha, so it recedes
+            // without introducing a second colour.
+            "text-accent caret-accent",
+            "outline-none placeholder:uppercase placeholder:tracking-widest placeholder:text-accent/35",
             "short:py-1.5",
           )}
         />

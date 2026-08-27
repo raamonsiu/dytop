@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { UiVisibility } from "@/constants/app";
+import { createStore, useStore } from "./createStore";
 import { setPref, usePref } from "./prefs";
 
 /**
@@ -14,6 +15,28 @@ const MOVEMENT_THRESHOLD_PX = 12;
 const HIDE_DELAY_MS = 2_000;
 /** Touch has no hover, so a tap reveals for a fixed window. */
 const TOUCH_REVEAL_MS = 2_600;
+
+/**
+ * Count of reasons the chrome must stay put, rather than a boolean, so several
+ * components can hold it open at once without one clearing another's claim.
+ */
+const holdStore = createStore(0);
+
+/**
+ * Pins the chrome open for as long as `active` is true.
+ *
+ * Used by the paste field: auto-hide pulling the input out from under someone
+ * mid-URL is the most annoying thing this view could do. The hold outlasts
+ * focus and only lifts once the field is empty again, so tabbing away to copy
+ * something doesn't lose what was typed.
+ */
+export function useChromeHold(active: boolean): void {
+  useEffect(() => {
+    if (!active) return;
+    holdStore.set((count) => count + 1);
+    return () => holdStore.set((count) => count - 1);
+  }, [active]);
+}
 
 export interface UiVisibilityApi {
   state: UiVisibility;
@@ -33,6 +56,7 @@ export interface UiVisibilityApi {
 export function useUiVisibility(): UiVisibilityApi {
   const state = usePref("uiVisibility");
   const [revealed, setRevealed] = useState(false);
+  const holds = useStore(holdStore);
   const listening = state === "auto";
 
   useEffect(() => {
@@ -97,7 +121,10 @@ export function useUiVisibility(): UiVisibilityApi {
 
   return {
     state,
-    chromeVisible: state === "pinned" || (listening && revealed),
+    // Holds only apply while auto-hiding. In the explicitly hidden states the
+    // chrome is inert and nothing can be typed into anyway, and overriding
+    // those would be contradicting a deliberate choice.
+    chromeVisible: state === "pinned" || (listening && (revealed || holds > 0)),
     ringVisible: state !== "hidden",
     setState: (next) => setPref("uiVisibility", next),
   };
