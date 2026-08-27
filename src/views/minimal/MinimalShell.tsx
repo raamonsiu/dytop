@@ -36,7 +36,10 @@ export function MinimalShell() {
       */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0"
+        // overflow-hidden because the backdrop is deliberately laid out larger
+        // than this box before its inverse zoom shrinks it back — see
+        // DitherBackground.
+        className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
         style={{ opacity: DITHER_CONFIG.opacity }}
       >
         <DitherBackground />

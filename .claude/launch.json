@@ -4,7 +4,7 @@
     {
       "name": "dytop",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev", "--port", "5173"],
+      "runtimeArgs": ["dev"],
       "port": 5173
     }
   ]

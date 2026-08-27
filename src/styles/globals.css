@@ -76,12 +76,9 @@ body,
   height: 100%;
 }
 
-html {
-  /* Everything is sized in rem, so this one value scales the whole interface.
-     A percentage rather than a px value, so a reader who has raised their
-     browser's default font size still gets the benefit of it. */
-  font-size: 115%;
-}
+/* Interface size lives entirely in DEFAULT_UI_SCALE (see useZoomControl), so
+   there is exactly one number to turn. An earlier root font-size bump did the
+   same job from a second place and made the two compound confusingly. */
 
 body {
   margin: 0;

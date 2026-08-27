@@ -1,17 +1,32 @@
 import { useEffect } from "react";
+import { createStore, useStore } from "./createStore";
 
 /**
- * How far the interface may be scaled down and up.
+ * How far the interface may be scaled, and where it sits by default.
  *
- * The floor is deliberately close to 1: this UI is built on small mono labels,
- * and much below full size they stop being readable rather than just looking
- * compact. The ceiling is generous because scaling up is never harmful.
+ * The floor is close to native because this UI is built on small mono labels:
+ * much below it they stop being readable rather than merely looking compact.
+ * The default deliberately sits well above the floor — the interface is meant
+ * to be read across a room, not squinted at.
  */
 export const MIN_UI_SCALE = 0.9;
 export const MAX_UI_SCALE = 2.2;
+export const DEFAULT_UI_SCALE = 1.55;
 
 /** Multiplicative step per zoom gesture, roughly matching a browser's own. */
 const STEP = 1.1;
+
+/**
+ * The single source of UI scale.
+ *
+ * Published as a store because the dither backdrop has to counter-scale itself
+ * against it — see DitherBackground.
+ */
+const uiScaleStore = createStore(DEFAULT_UI_SCALE);
+
+export function useUiScale(): number {
+  return useStore(uiScaleStore);
+}
 
 /**
  * Next scale for a zoom gesture, clamped.
@@ -28,17 +43,19 @@ export function nextScale(current: number, direction: "in" | "out"): number {
 function applyScale(scale: number): void {
   // The CSS `zoom` property rather than a transform: `transform` would make the
   // root a containing block for fixed-position descendants, which is most of
-  // the chrome in both views. `zoom` also keeps layout and hit-testing correct.
+  // the chrome in both views. `zoom` also keeps layout and hit-testing correct,
+  // and applied to the root it reinterprets the viewport, so `height: 100%`
+  // and viewport units still resolve to the screen.
   document.documentElement.style.zoom = scale === 1 ? "" : String(scale);
+  uiScaleStore.set(scale);
 }
 
 /**
  * Keeps zooming inside a usable range.
  *
- * The previous attempt tried to *detect* native browser zoom from
- * devicePixelRatio and counter-scale it. That never worked: the ratio is also
- * the display's own density, so there is no baseline to compare against, and
- * nothing could be verified without driving real browser zoom.
+ * An earlier attempt tried to *detect* native browser zoom from
+ * devicePixelRatio and counter-scale it. That could not work: the ratio is also
+ * the display's own density, so there is no baseline to compare against.
  *
  * This inverts the approach. The zoom gestures are intercepted before the
  * browser acts on them, and the app applies its own scale within fixed bounds —
@@ -49,7 +66,8 @@ function applyScale(scale: number): void {
  */
 export function useZoomControl(): void {
   useEffect(() => {
-    let scale = 1;
+    let scale = DEFAULT_UI_SCALE;
+    applyScale(scale);
 
     const zoom = (direction: "in" | "out") => {
       const next = nextScale(scale, direction);
@@ -78,7 +96,7 @@ export function useZoomControl(): void {
         zoom("out");
       } else if (event.key === "0") {
         event.preventDefault();
-        scale = 1;
+        scale = DEFAULT_UI_SCALE;
         applyScale(scale);
       }
     };
