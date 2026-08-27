@@ -32,7 +32,7 @@ export function AddSongPanel() {
           role="status"
           className={cn("mt-2 text-xs", feedback.ok ? "text-success" : "text-danger")}
         >
-          {t(feedback.key)}
+          {t(feedback.key, feedback.params)}
         </p>
       ) : null}
     </form>

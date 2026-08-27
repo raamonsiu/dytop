@@ -9,6 +9,7 @@ import { subscribeToTime } from "@/player/clock";
 import { playNext, playPrevious, togglePlayPause } from "@/player/controller";
 import { useIsPlaying } from "@/player/playerStore";
 import { useNowPlaying } from "@/player/queueStore";
+import { NextUpIndicator } from "./NextUpIndicator";
 
 /**
  * Bottom-right transport and readout.
@@ -123,6 +124,8 @@ export function PlayerHud({ visible }: { visible: boolean }) {
           <span ref={timeRef}>0:00</span>
         </button>
       </div>
+
+      <NextUpIndicator />
     </div>
   );
 }

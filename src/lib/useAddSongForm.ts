@@ -6,6 +6,8 @@ import { addTrackByUrl } from "@/player/controller";
 interface AddSongFeedback {
   ok: boolean;
   key: string;
+  /** i18n interpolation values, e.g. `{{count}}` for a playlist import. */
+  params?: Record<string, number>;
 }
 
 /**
@@ -33,9 +35,22 @@ export function useAddSongForm() {
 
     if (result.ok) {
       setUrl("");
-      show({ ok: true, key: "player.added" });
+      if (result.kind === "track") {
+        show({ ok: true, key: "player.added" });
+      } else if (result.added < result.total) {
+        show({
+          ok: true,
+          key: "player.playlistTruncated",
+          params: { count: result.added, total: result.total },
+        });
+      } else {
+        show({ ok: true, key: "player.addedPlaylist", params: { count: result.added } });
+      }
     } else {
-      show({ ok: false, key: "errors.invalidUrl" });
+      show({
+        ok: false,
+        key: result.reason === "playlist-failed" ? "errors.playlistFailed" : "errors.invalidUrl",
+      });
     }
   }
 

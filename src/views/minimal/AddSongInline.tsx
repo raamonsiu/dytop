@@ -92,7 +92,7 @@ export function AddSongInline() {
               feedback.ok ? "text-success" : "text-danger",
             )}
           >
-            {t(feedback.key)}
+            {t(feedback.key, feedback.params)}
           </p>
         ) : null}
       </div>

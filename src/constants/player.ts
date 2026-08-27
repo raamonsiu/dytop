@@ -12,6 +12,14 @@ export const PROGRESS_POLL_MS = 300;
  * prototype did, rather than hanging with dead controls. */
 export const PLAYER_READY_TIMEOUT_MS = 4_000;
 
+/** Playlists can run to thousands of entries, each needing its own oEmbed
+ * request. Capped so pasting a huge one can't stall the app or hammer the
+ * endpoint. */
+export const MAX_PLAYLIST_TRACKS = 100;
+
+/** How long the throwaway playlist-resolving player gets before giving up. */
+export const PLAYLIST_RESOLVE_TIMEOUT_MS = 10_000;
+
 /** Step for the lyrics sync nudge, in seconds. */
 export const LYRICS_DELAY_STEP_SECONDS = 0.25;
 

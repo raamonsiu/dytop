@@ -26,7 +26,11 @@
     "pasteUrl": "Pega una URL de YouTube…",
     "add": "añadir",
     "adding": "…",
-    "added": "Añadido a la cola."
+    "added": "Añadido a la cola.",
+    "addedPlaylist_one": "Añadido {{count}} tema de la lista.",
+    "addedPlaylist_other": "Añadidos {{count}} temas de la lista.",
+    "playlistTruncated": "Añadidos los primeros {{count}} de {{total}} temas (límite de la lista).",
+    "nextUp": "A continuación"
   },
   "lyrics": {
     "loading": "Buscando letra…",
@@ -38,6 +42,7 @@
   },
   "errors": {
     "invalidUrl": "Esa no es una URL de YouTube válida.",
+    "playlistFailed": "No se pudo cargar esa lista de reproducción.",
     "player": {
       "invalidId": "ID de vídeo inválido.",
       "html5": "Error de reproducción HTML5.",

@@ -26,7 +26,11 @@
     "pasteUrl": "Enganxa una URL de YouTube…",
     "add": "afegeix",
     "adding": "…",
-    "added": "Afegit a la cua."
+    "added": "Afegit a la cua.",
+    "addedPlaylist_one": "Afegit {{count}} tema de la llista.",
+    "addedPlaylist_other": "Afegits {{count}} temes de la llista.",
+    "playlistTruncated": "Afegits els primers {{count}} de {{total}} temes (límit de la llista).",
+    "nextUp": "Tot seguit"
   },
   "lyrics": {
     "loading": "Cercant la lletra…",
@@ -38,6 +42,7 @@
   },
   "errors": {
     "invalidUrl": "Aquesta no és una URL de YouTube vàlida.",
+    "playlistFailed": "No s'ha pogut carregar aquesta llista de reproducció.",
     "player": {
       "invalidId": "Identificador de vídeo no vàlid.",
       "html5": "Error de reproducció HTML5.",

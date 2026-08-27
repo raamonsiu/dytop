@@ -3,6 +3,7 @@ import { usePlayerError } from "@/player/playerStore";
 import { useNowPlaying } from "@/player/queueStore";
 import { AddSongInline } from "./AddSongInline";
 import { LyricsColumn } from "./LyricsColumn";
+import { NextUpIndicator } from "./NextUpIndicator";
 import { NowPlayingCard } from "./NowPlayingCard";
 import { useMinimalOutletContext } from "./outletContext";
 
@@ -64,6 +65,7 @@ export function RadioView() {
         >
           {errorKey ? <PlayerError messageKey={errorKey} /> : null}
           <NowPlayingCard track={nowPlaying} />
+          <NextUpIndicator />
           {/*
             Never hidden, only compacted. An earlier version dropped this on
             short viewports, which also fired on zoom-in: zooming shrinks the

@@ -149,3 +149,8 @@ export function useHistory(): Track[] {
 export function useUpcoming(): Track[] {
   return useStoreSelector(queueStore, (state) => state.upcoming);
 }
+
+/** The track that will play after this one, or null at the end of the queue. */
+export function useNextUp(): Track | null {
+  return useStoreSelector(queueStore, (state) => state.upcoming[0] ?? null);
+}

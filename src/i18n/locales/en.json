@@ -26,7 +26,11 @@
     "pasteUrl": "Paste a YouTube URL…",
     "add": "add",
     "adding": "…",
-    "added": "Added to the queue."
+    "added": "Added to the queue.",
+    "addedPlaylist_one": "Added {{count}} track from the playlist.",
+    "addedPlaylist_other": "Added {{count}} tracks from the playlist.",
+    "playlistTruncated": "Added the first {{count}} of {{total}} tracks (playlist limit).",
+    "nextUp": "Next up"
   },
   "lyrics": {
     "loading": "Looking for lyrics…",
@@ -38,6 +42,7 @@
   },
   "errors": {
     "invalidUrl": "That is not a valid YouTube URL.",
+    "playlistFailed": "Could not load that playlist.",
     "player": {
       "invalidId": "Invalid video id.",
       "html5": "HTML5 playback error.",

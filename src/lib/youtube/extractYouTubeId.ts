@@ -1,10 +1,7 @@
+import { isHostOrSubdomain } from "./youtubeHost";
+
 /** YouTube video ids are always 11 chars of the URL-safe base64 alphabet. */
 const VIDEO_ID_PATTERN = /^[\w-]{11}$/;
-
-/** True for `base` itself or any of its subdomains, never a lookalike like `evil-youtube.com`. */
-function isHostOrSubdomain(hostname: string, base: string): boolean {
-  return hostname === base || hostname.endsWith(`.${base}`);
-}
 
 /**
  * Pulls the video id out of any of the four URL shapes YouTube hands out:

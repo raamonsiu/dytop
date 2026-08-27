@@ -1,4 +1,6 @@
+import { MAX_PLAYLIST_TRACKS } from "@/constants/player";
 import { extractYouTubeId } from "@/lib/youtube/extractYouTubeId";
+import { extractYouTubePlaylistId } from "@/lib/youtube/extractYouTubePlaylistId";
 import { fetchTrack } from "@/lib/youtube/oembed";
 import { loadLyricsFor } from "@/lyrics/lyricsStore";
 import { resyncClock } from "./clock";
@@ -12,6 +14,7 @@ import {
   seek,
 } from "./engine";
 import { playerStore, setPlayerState } from "./playerStore";
+import { resolvePlaylistVideoIds } from "./playlistResolver";
 import {
   advance,
   enqueue,
@@ -23,8 +26,9 @@ import {
 import type { Track } from "./types";
 
 export type AddTrackResult =
-  | { ok: true; track: Track }
-  | { ok: false; reason: "invalid-url" };
+  | { ok: true; kind: "track"; track: Track }
+  | { ok: true; kind: "playlist"; added: number; total: number }
+  | { ok: false; reason: "invalid-url" | "playlist-failed" };
 
 let initPromise: Promise<void> | null = null;
 
@@ -70,8 +74,18 @@ export function initPlayer(mount: HTMLElement): Promise<void> {
   return initPromise;
 }
 
-/** Resolves metadata and appends to the queue, starting playback if idle. */
+/**
+ * Resolves metadata and appends to the queue, starting playback if idle.
+ *
+ * A playlist page URL adds every track it holds (capped at
+ * `MAX_PLAYLIST_TRACKS`); anything else, including a video URL that also
+ * carries a `list=` param, adds just that one video. See
+ * `extractYouTubePlaylistId` for why the two are kept apart.
+ */
 export async function addTrackByUrl(url: string): Promise<AddTrackResult> {
+  const playlistId = extractYouTubePlaylistId(url);
+  if (playlistId) return addPlaylistById(playlistId);
+
   const videoId = extractYouTubeId(url);
   if (!videoId) return { ok: false, reason: "invalid-url" };
 
@@ -83,7 +97,29 @@ export async function addTrackByUrl(url: string): Promise<AddTrackResult> {
   // gesture that unlocks autoplay.
   if (wasEmpty) playNext();
 
-  return { ok: true, track };
+  return { ok: true, kind: "track", track };
+}
+
+async function addPlaylistById(playlistId: string): Promise<AddTrackResult> {
+  let videoIds: string[];
+  try {
+    videoIds = await resolvePlaylistVideoIds(playlistId);
+  } catch {
+    return { ok: false, reason: "playlist-failed" };
+  }
+
+  const total = videoIds.length;
+  const capped = videoIds.slice(0, MAX_PLAYLIST_TRACKS);
+  const wasEmpty = queueStore.get().nowPlaying === null;
+
+  const tracks = await Promise.all(
+    capped.map((videoId) => fetchTrack(videoId, crypto.randomUUID())),
+  );
+  tracks.forEach(enqueue);
+
+  if (wasEmpty) playNext();
+
+  return { ok: true, kind: "playlist", added: tracks.length, total };
 }
 
 /** Pauses if currently playing or buffering, otherwise resumes. */

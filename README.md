@@ -39,7 +39,7 @@ The app ships as **two views over one playback engine**:
 Switching between them is instant and keeps playback running: the YouTube
 embed never remounts, no matter which view or route it's behind.
 
-> **1.0.0.** The player, both views, lyrics sync and background uploads are
+> **1.1.0.** The player, both views, lyrics sync and background uploads are
 > all done and stable. Found something broken?
 > [Open an issue](https://github.com/raamonsiu/dytop/issues/new).
 
