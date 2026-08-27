@@ -79,7 +79,11 @@ export function AddSongInline() {
           aria-label={t("player.pasteUrl")}
           className={cn(
             "min-w-0 flex-1 bg-transparent py-2.5 pr-3 font-mono text-xs tracking-wide",
-            "outline-none placeholder:uppercase placeholder:tracking-widest placeholder:text-muted-foreground/60",
+            // Explicit rather than inherited: form controls don't take the
+            // page's colour on their own, so without this the typed URL fell
+            // back to the browser's default black on a near-black field.
+            "text-foreground caret-accent",
+            "outline-none placeholder:uppercase placeholder:tracking-widest placeholder:text-muted-foreground/45",
             "short:py-1.5",
           )}
         />

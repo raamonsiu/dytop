@@ -41,7 +41,7 @@ export function AddSongPanel() {
           onChange={(event) => setUrl(event.target.value)}
           placeholder={t("player.pasteUrl")}
           aria-label={t("player.pasteUrl")}
-          className="min-w-0 flex-1 rounded-view border border-glass-border bg-surface/60 px-3 py-2 text-xs outline-none placeholder:text-muted-foreground focus-visible:border-accent"
+          className="min-w-0 flex-1 rounded-view border border-glass-border bg-surface/60 px-3 py-2 text-xs text-foreground caret-accent outline-none placeholder:text-muted-foreground/45 focus-visible:border-accent"
         />
         <Button type="submit" variant="primary" disabled={pending}>
           {t(pending ? "player.adding" : "player.add")}

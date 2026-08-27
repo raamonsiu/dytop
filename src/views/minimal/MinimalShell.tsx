@@ -47,12 +47,22 @@ export function MinimalShell() {
 
       <PerimeterProgress visible={ringVisible} />
 
+      {/*
+        Collapses along with the rest of the chrome, so the lyrics below land on
+        the view's true vertical centre. Left occupying its space, the nav would
+        push everything down and the lyrics would settle below the middle.
+      */}
       <div
-        className="relative z-10 transition-opacity duration-500"
-        style={{ opacity: chromeVisible ? 1 : 0 }}
-        inert={!chromeVisible}
+        className="relative z-10 grid transition-[grid-template-rows] duration-1000 ease-in-out"
+        style={{ gridTemplateRows: chromeVisible ? "1fr" : "0fr" }}
       >
-        <MinimalNav />
+        <div
+          className="min-h-0 overflow-hidden transition-opacity duration-500"
+          style={{ opacity: chromeVisible ? 1 : 0 }}
+          inert={!chromeVisible}
+        >
+          <MinimalNav />
+        </div>
       </div>
 
       <div className="relative z-10 min-h-0 flex-1">
