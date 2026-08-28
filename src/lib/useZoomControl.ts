@@ -18,12 +18,22 @@ export const DEFAULT_UI_SCALE = 1.55;
 const STEP = 1.1;
 
 /**
+ * True on touch-primary devices, where the "read across a room" default makes
+ * no sense: the screen is held close, there is no ctrl+wheel or ctrl+/- to
+ * intercept, and the room left over after a 1.55x zoom on a ~375px viewport is
+ * a phone-unfriendly ~240px.
+ */
+export function prefersNoForcedZoom(): boolean {
+  return typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches === true;
+}
+
+/**
  * The single source of UI scale.
  *
  * Published as a store because the dither backdrop has to counter-scale itself
  * against it: see DitherBackground.
  */
-const uiScaleStore = createStore(DEFAULT_UI_SCALE);
+const uiScaleStore = createStore(prefersNoForcedZoom() ? 1 : DEFAULT_UI_SCALE);
 
 export function useUiScale(): number {
   return useStore(uiScaleStore);
@@ -67,6 +77,11 @@ function applyScale(scale: number): void {
  */
 export function useZoomControl(): void {
   useEffect(() => {
+    // Touch devices keep the platform's native scale: there is no ctrl+wheel
+    // or ctrl+/- gesture to intercept, and forcing one in would only shrink
+    // the effective viewport.
+    if (prefersNoForcedZoom()) return;
+
     let scale = DEFAULT_UI_SCALE;
     applyScale(scale);
 

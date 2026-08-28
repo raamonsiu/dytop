@@ -52,7 +52,9 @@ export function AddSongInline() {
           placeholder={t("player.pasteUrl")}
           aria-label={t("player.pasteUrl")}
           className={cn(
-            "min-w-0 flex-1 bg-transparent py-2.5 pr-3 font-mono text-xs tracking-wide",
+            // pointer-coarse bumps this to 16px: iOS Safari force-zooms the
+            // page on focus for any input under that size.
+            "min-w-0 flex-1 bg-transparent py-2.5 pr-3 font-mono text-xs tracking-wide pointer-coarse:text-base",
             // The accent token, not the foreground: what you type reads as part
             // of the theme. Explicit because form controls don't inherit the
             // page's colour on their own: without it the URL fell back to the

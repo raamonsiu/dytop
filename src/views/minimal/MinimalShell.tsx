@@ -3,6 +3,8 @@ import { PerimeterProgress } from "@/components/PerimeterProgress";
 import { UiVisibilityControl } from "@/components/UiVisibilityControl";
 import { DITHER_CONFIG } from "@/constants/dither";
 import { usePref } from "@/lib/prefs";
+import { safeAreaOffset } from "@/lib/safeArea";
+import { useIsCompactLayout } from "@/lib/useIsCompactLayout";
 import { useUiVisibility } from "@/lib/useUiVisibility";
 import { resolveTheme } from "@/themes/themes";
 import { themeStyle } from "@/themes/themeStyle";
@@ -20,6 +22,7 @@ import { MinimalNav } from "./MinimalNav";
  */
 export function MinimalShell() {
   const scheme = usePref("colorScheme");
+  const compact = useIsCompactLayout();
   const { state, chromeVisible, ringVisible, setState } = useUiVisibility();
 
   return (
@@ -69,10 +72,31 @@ export function MinimalShell() {
         <Outlet context={{ chromeVisible } satisfies MinimalOutletContext} />
       </div>
 
+      {/*
+        Compact drops it into the flex flow as the last row, so it claims its
+        own full-width band and the player above simply gets less room. Nothing
+        is overlapped because nothing is overlapping: the alternative, a
+        fixed full-width bar, would sit on top of the add-song field.
+      */}
       <UiVisibilityControl
         state={state}
         onChange={setState}
-        className="fixed bottom-4 right-4 z-50"
+        compact={compact}
+        // Bottom-left, not bottom-right: the add-song field's submit button
+        // lives in that corner, and a touch-sized control there covers it.
+        className={compact ? "relative z-50 shrink-0" : "fixed bottom-4 left-4 z-50"}
+        style={
+          compact
+            ? {
+                marginBottom: safeAreaOffset("bottom", 1),
+                marginLeft: safeAreaOffset("left", 1),
+                marginRight: safeAreaOffset("right", 1),
+              }
+            : {
+                left: safeAreaOffset("left", 1),
+                bottom: safeAreaOffset("bottom", 1),
+              }
+        }
       />
     </div>
   );

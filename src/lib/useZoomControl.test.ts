@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { MAX_UI_SCALE, MIN_UI_SCALE, nextScale } from "./useZoomControl";
+import { afterEach, describe, expect, it } from "vitest";
+import { MAX_UI_SCALE, MIN_UI_SCALE, nextScale, prefersNoForcedZoom } from "./useZoomControl";
 
 describe("nextScale", () => {
   it("grows when zooming in and shrinks when zooming out", () => {
@@ -37,5 +37,27 @@ describe("nextScale", () => {
   it("keeps the bounds either side of neutral", () => {
     expect(MIN_UI_SCALE).toBeLessThan(1);
     expect(MAX_UI_SCALE).toBeGreaterThan(1);
+  });
+});
+
+describe("prefersNoForcedZoom", () => {
+  afterEach(() => {
+    // @ts-expect-error jsdom defines no matchMedia; each test restores its own stub.
+    delete window.matchMedia;
+  });
+
+  it("is true when the primary pointer is coarse (touch)", () => {
+    window.matchMedia = ((query: string) =>
+      ({ matches: query.includes("coarse") }) as MediaQueryList) as typeof window.matchMedia;
+    expect(prefersNoForcedZoom()).toBe(true);
+  });
+
+  it("is false when the primary pointer is fine (mouse/trackpad)", () => {
+    window.matchMedia = (() => ({ matches: false }) as MediaQueryList) as typeof window.matchMedia;
+    expect(prefersNoForcedZoom()).toBe(false);
+  });
+
+  it("is false when matchMedia isn't available at all", () => {
+    expect(prefersNoForcedZoom()).toBe(false);
   });
 });

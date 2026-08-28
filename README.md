@@ -13,6 +13,7 @@ No account. No server. No tracking.
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](#docker)
+[![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)](public/manifest.webmanifest)
 
 </div>
 
@@ -64,6 +65,13 @@ embed never remounts, no matter which view or route it's behind.
 - **A real queue** - history, now playing and upcoming, with drag-to-reorder,
   jump-to-track, and a saved session restored (but not auto-played) on the
   next visit.
+- **Playlists** - paste a playlist page's own URL (not just a video that
+  happens to be in one) to queue every track it holds, up to 100 at a time.
+  Resolved with no API key: a throwaway, invisible player cues the playlist
+  and reads its track ids back, then tears itself down.
+- **What's next** - a one-line hint under the transport showing the next
+  track's title and artist, so the queue doesn't have to be opened just to
+  check.
 - **Scrubbable progress** everywhere: a slider in both views plus a
   perimeter ring in legacy, all keyboard-accessible.
 
@@ -92,7 +100,14 @@ embed never remounts, no matter which view or route it's behind.
   fully hidden - so the interface can get out of the way entirely.
 - **A custom zoom** that scales the whole UI independently of the browser,
   with its own bounds tuned for the small mono labels this interface is built
-  on.
+  on. Off entirely on touch devices, which have no gesture to intercept it
+  with and no use for it.
+- **Responsive down to a phone.** The floating corner widgets (visibility
+  control, legacy's mini-player) become full-width stacked rows below 640px,
+  every control grows to a real touch target, and the navbar wraps instead of
+  overflowing.
+- **Installable.** A web app manifest and a set of icons mean "Add to Home
+  Screen" gives DYTOP its own launcher icon and a browser-chrome-free window.
 - **Reduced-motion support**, following the system accessibility setting.
 
 ---
@@ -161,6 +176,12 @@ docs/
   navigation.
 - **Only minimal loads `three`.** The Dither component sits behind
   `React.lazy`, in its own chunk, heavier than the rest of the app combined.
+- **Two different signals decide what "mobile" means.** `pointer: coarse`
+  (`useZoomControl`) answers "is this touch," and turns the custom zoom off.
+  A `max-width` media query (`useIsCompactLayout`) answers "is there room,"
+  and switches the corner widgets to full-width rows. A narrow desktop window
+  should get the second without the first, so they're kept as two hooks
+  rather than one.
 
 ---
 
@@ -191,6 +212,7 @@ your device.
 | Uploaded background images and videos | IndexedDB, as blobs | Never |
 | Track title and artist guess | Sent to lrclib.net | Only to look up lyrics for that track |
 | Video ID | Sent to YouTube's oEmbed endpoint and IFrame API | Only to fetch metadata and play the video |
+| Playlist ID | Sent to YouTube's IFrame API | Only to resolve a pasted playlist to its tracks |
 
 Nothing else reaches the network. There is no first-party server for any of
 this to go through in the first place.

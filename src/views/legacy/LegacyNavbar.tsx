@@ -6,6 +6,7 @@ import { NavTabs } from "@/components/NavTabs";
 import { ViewToggle } from "@/components/ViewToggle";
 import { Panel } from "@/components/ui/Panel";
 import { cn } from "@/lib/cn";
+import { safeAreaOffset } from "@/lib/safeArea";
 import { AddSongPanel } from "./panels/AddSongPanel";
 import { BackgroundPanel } from "./panels/BackgroundPanel";
 import { LyricsPanel } from "./panels/LyricsPanel";
@@ -38,14 +39,22 @@ export function LegacyNavbar({ revealed }: { revealed: boolean }) {
       style={{
         opacity: revealed ? 1 : 0,
         transform: revealed ? "translateY(0)" : "translateY(-120%)",
+        // Rather than replacing p-3 outright: notchless screens keep the
+        // usual 0.75rem, notched ones grow to clear the cutout.
+        paddingTop: safeAreaOffset("top", 0.75),
       }}
       inert={!revealed}
     >
-      <nav className="relative flex items-center gap-1 rounded-view border border-glass-border bg-glass-strong px-3 py-1 shadow-2xl backdrop-blur-xl">
+      <nav
+        className={cn(
+          "relative flex flex-wrap items-center justify-center gap-1 rounded-view border border-glass-border bg-glass-strong shadow-2xl backdrop-blur-xl",
+          "px-2 py-1 sm:px-3",
+        )}
+      >
         <Brand view="legacy" />
-        <span aria-hidden className="mx-2 h-4 w-px bg-glass-border" />
+        <span aria-hidden className="mx-1 h-4 w-px bg-glass-border sm:mx-2" />
         <NavTabs view="legacy" />
-        <span aria-hidden className="mx-2 h-4 w-px bg-glass-border" />
+        <span aria-hidden className="mx-1 h-4 w-px bg-glass-border sm:mx-2" />
 
         {(Object.keys(PANEL_ICONS) as PanelId[]).map((id) => {
           const Icon = PANEL_ICONS[id];
@@ -57,7 +66,9 @@ export function LegacyNavbar({ revealed }: { revealed: boolean }) {
               aria-label={t(`legacy.panels.${id}`)}
               aria-expanded={openPanel === id}
               className={cn(
-                "grid size-8 place-items-center rounded-view transition-colors",
+                // pointer-coarse grows this to a real touch target: these
+                // panels (background, add, queue, lyrics) have no other way in.
+                "grid size-8 place-items-center rounded-view transition-colors pointer-coarse:size-11",
                 "focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent",
                 openPanel === id
                   ? "bg-accent/15 text-accent"

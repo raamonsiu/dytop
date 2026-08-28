@@ -182,7 +182,9 @@ function Row({
           type="button"
           onClick={onRemove}
           aria-label={t("queue.remove")}
-          className="text-muted-foreground opacity-0 transition-opacity hover:text-danger group-hover:opacity-100 focus-visible:opacity-100"
+          // A touch screen has no hover to reveal this on, and removing a
+          // track is the one action here with no other way to reach it.
+          className="text-muted-foreground opacity-0 transition-opacity hover:text-danger group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"
         >
           <X size={12} />
         </button>

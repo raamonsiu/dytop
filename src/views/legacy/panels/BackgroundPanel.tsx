@@ -112,7 +112,9 @@ export function BackgroundPanel() {
                 type="button"
                 onClick={() => void deleteBackground(entry.id)}
                 aria-label={t("background.remove")}
-                className="absolute right-0.5 top-0.5 grid size-4 place-items-center rounded bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                // A touch screen has no hover to reveal this on, and deleting
+                // a background is the one action here with no other way in.
+                className="absolute right-0.5 top-0.5 grid size-4 place-items-center rounded bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"
               >
                 <X size={10} />
               </button>

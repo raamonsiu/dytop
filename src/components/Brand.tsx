@@ -27,11 +27,14 @@ export function Brand({ view }: { view: ViewName }) {
         >
           D1ITO
         </span>
-        <span aria-hidden className="text-xs text-muted-foreground">
+        {/* The IPA gloss and the role line beneath are the first things a
+            cramped screen can afford to lose: cut before anything functional
+            has to. */}
+        <span aria-hidden className="hidden text-xs text-muted-foreground sm:inline">
           /ˈdi.to/
         </span>
       </span>
-      <span className="block text-xs uppercase tracking-widest text-muted-foreground">
+      <span className="hidden text-xs uppercase tracking-widest text-muted-foreground sm:block">
         {t("app.role")}
       </span>
     </Link>

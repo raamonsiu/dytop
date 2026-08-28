@@ -20,7 +20,9 @@ export function AddSongPanel() {
           aria-label={t("player.pasteUrl")}
           // Same idea as the D1 field: the text is the accent token, so here it
           // also follows the colour sampled from the active background.
-          className="min-w-0 flex-1 rounded-view border border-glass-border bg-surface/60 px-3 py-2 text-xs text-accent caret-accent outline-none placeholder:text-accent/35 focus-visible:border-accent"
+          // pointer-coarse bumps this to 16px: iOS Safari force-zooms the page
+          // on focus for any input under that size.
+          className="min-w-0 flex-1 rounded-view border border-glass-border bg-surface/60 px-3 py-2 text-xs text-accent caret-accent outline-none placeholder:text-accent/35 focus-visible:border-accent pointer-coarse:text-base"
         />
         <Button type="submit" variant="primary" disabled={pending}>
           {t(pending ? "player.adding" : "player.add")}
