@@ -28,17 +28,24 @@ for and nothing of yours to store on a server.
 
 The app ships as **two views over one playback engine**:
 
-- **minimal** (`/`, `/history`) - a dark, monospaced interface with an
-  animated dither backdrop, in the visual language of the
+- **minimal** (`/`, `/radio`, `/history`) - a dark, monospaced interface with
+  an animated dither backdrop, in the visual language of the
   [D1ITO](https://d1ito.dev) portfolio. Lyrics fade in and out on an opacity
   ladder around the current line.
-- **legacy** (`/legacy`, `/legacy/history`) - the original single-file
-  prototype's look: your own uploaded backgrounds, an accent colour sampled
-  live from whatever image or video is showing, and a thin progress ring
-  traced around the edge of the window.
+- **legacy** (`/legacy`, `/legacy/radio`, `/legacy/history`) - the original
+  single-file prototype's look: your own uploaded backgrounds, an accent
+  colour sampled live from whatever image or video is showing, and a thin
+  progress ring traced around the edge of the window.
 
 Switching between them is instant and keeps playback running: the YouTube
 embed never remounts, no matter which view or route it's behind.
+
+Each view also has a **radio** tab: one shared station that plays the same
+track at the same second for everyone, computed purely from wall-clock time -
+no server keeping listeners in sync, just a deterministic schedule every
+client derives on its own. It keeps each view's own lyrics and look, with the
+personal controls (seeking, skipping, queueing, background/lyrics edits)
+switched off, since there's nothing personal left to control.
 
 > **1.1.0.** The player, both views, lyrics sync and background uploads are
 > all done and stable. Found something broken?
@@ -74,6 +81,23 @@ embed never remounts, no matter which view or route it's behind.
   check.
 - **Scrubbable progress** everywhere: a slider in both views plus a
   perimeter ring in legacy, all keyboard-accessible.
+
+### Radio
+
+- **One station, no backend, always in sync** - every listener hears the same
+  track at the same second. A daily playlist order is shuffled with a PRNG
+  seeded from the UTC date, and `unix time mod loop length` picks the
+  (track, second) every client resolves identically, with nothing
+  coordinating it server-side.
+- **Same view, fewer controls** - radio keeps each view's own lyrics and
+  look, but drops what only makes sense for a personal queue: no seeking, no
+  skip/pause/previous, no adding songs, no background or lyrics-timing edits.
+- **Picks up mid-song** - joining, or refreshing the page, lands you inside
+  the current track at the right second, never back at 0:00.
+- **A maintained catalog** - the station's playlist lives in
+  `src/radio/manifest.ts`. `scripts/fetch_radio_manifest.py` regenerates it
+  from a real YouTube playlist, pulling exact durations and embeddability
+  from YouTube's own API instead of guessing.
 
 ### Lyrics
 
@@ -152,6 +176,7 @@ lrclib, oEmbed) live in `docker/security-headers.conf`.
 src/
   themes/       design tokens shared by both views
   player/       YouTube engine, rAF clock, queue, controller
+  radio/        deterministic daily schedule + session controller for the shared station
   lyrics/       LRC parser, lrclib client, sync state
   backgrounds/  IndexedDB storage, accent sampling, rotation
   views/        minimal/ and legacy/
@@ -159,6 +184,8 @@ src/
 docs/
   prototype.html   the original single-file prototype, kept verbatim
   PARITY.md        what was kept, what improved, and what diverged on purpose
+scripts/
+  fetch_radio_manifest.py   pulls a YouTube playlist into radio/manifest.ts's format
 ```
 
 ### Worth knowing before you touch anything
@@ -182,6 +209,11 @@ docs/
   and switches the corner widgets to full-width rows. A narrow desktop window
   should get the second without the first, so they're kept as two hooks
   rather than one.
+- **Radio and the personal queue share one embed.** Entering radio captures
+  the queue's position and swaps the engine's advance-handler; leaving it
+  restores both. A track is always loaded with an explicit `startSeconds`
+  rather than loaded-then-seeked: calling `seekTo` right after `loadVideoById`
+  races the embed's own asynchronous load and is frequently ignored.
 
 ---
 
