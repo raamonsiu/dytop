@@ -10,7 +10,8 @@
     "toMinimal": "vista minimal"
   },
   "radio": {
-    "offline": "La ràdio està sense connexió"
+    "offline": "La ràdio està sense connexió",
+    "tapToListen": "Toca per escoltar"
   },
   "history": {
     "title": "historial",

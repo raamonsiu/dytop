@@ -1,6 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
-import { VIEW_ROUTES } from "@/constants/app";
 import { cn } from "@/lib/cn";
 import type { ViewName } from "@/themes/tokens";
 
@@ -8,14 +6,13 @@ import type { ViewName } from "@/themes/tokens";
  * The wordmark, matching the D1ITO portfolio's header: pixel display face,
  * IPA transcription beside it, role underneath in wide-tracked caps.
  *
- * Links to the current view's own player route, so the logo never doubles as a
- * way out of the mode you're in.
+ * Links out to the main D1ITO portfolio site, same as that site's own header.
  */
 export function Brand({ view }: { view: ViewName }) {
   const { t } = useTranslation();
 
   return (
-    <Link to={VIEW_ROUTES[view].player} className="leading-tight">
+    <a href="https://d1ito.dev" className="leading-tight">
       <span className="flex items-baseline gap-2">
         <span
           className={cn(
@@ -37,6 +34,6 @@ export function Brand({ view }: { view: ViewName }) {
       <span className="hidden text-xs uppercase tracking-widest text-muted-foreground sm:block">
         {t("app.role")}
       </span>
-    </Link>
+    </a>
   );
 }

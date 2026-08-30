@@ -15,6 +15,31 @@ let player: YT.Player | null = null;
 let ready = false;
 let initPromise: Promise<void> | null = null;
 
+/**
+ * True once the user has interacted with the page at all (click, tap, key
+ * press) since it loaded. Browsers stop rejecting unmuted, JS-triggered
+ * playback for the rest of the page's life after any such interaction,
+ * regardless of whether the later `play()` call happens inside that same
+ * gesture's call stack — only a page that has *never* seen one enforces the
+ * block. Radio uses this to skip its "tap to listen" prompt when the visitor
+ * navigated in from elsewhere in the app, while still requiring it on a
+ * genuinely fresh load (direct link, reload, new tab).
+ */
+let interacted = false;
+
+function markInteracted(): void {
+  interacted = true;
+  document.removeEventListener("pointerdown", markInteracted, true);
+  document.removeEventListener("keydown", markInteracted, true);
+}
+
+document.addEventListener("pointerdown", markInteracted, true);
+document.addEventListener("keydown", markInteracted, true);
+
+export function hasUserInteracted(): boolean {
+  return interacted;
+}
+
 /** Set by the controller. Kept as a hook rather than an import so the engine
  * stays a leaf module: the controller imports the engine, never the reverse. */
 let advanceHandler: (() => void) | null = null;

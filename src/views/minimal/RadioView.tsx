@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { usePlayerError } from "@/player/playerStore";
 import { entryToTrack } from "@/radio/position";
-import { startRadio, stopRadio, useRadio } from "@/radio/controller";
+import { startRadio, stopRadio, unlockRadioPlayback, useRadio } from "@/radio/controller";
 import { LyricsColumn } from "./LyricsColumn";
 import { NextUpIndicator } from "./NextUpIndicator";
 import { NowPlayingCard } from "./NowPlayingCard";
@@ -11,7 +11,7 @@ import { useMinimalOutletContext } from "./outletContext";
 export function RadioView() {
   const { t } = useTranslation();
   const { chromeVisible } = useMinimalOutletContext();
-  const { active, entry, next } = useRadio();
+  const { active, entry, next, needsGesture } = useRadio();
   const errorKey = usePlayerError();
 
   useEffect(() => {
@@ -33,6 +33,21 @@ export function RadioView() {
   }
 
   const track = entryToTrack(entry);
+
+  if (needsGesture) {
+    return (
+      <section className="flex h-full flex-col items-center justify-center gap-6 px-6 pb-16">
+        <button
+          type="button"
+          onClick={unlockRadioPlayback}
+          className="text-xs uppercase tracking-widest text-muted-foreground underline underline-offset-4"
+        >
+          {t("radio.tapToListen")}
+        </button>
+        {errorKey ? <PlayerError messageKey={errorKey} /> : null}
+      </section>
+    );
+  }
 
   return (
     <section className="flex h-full flex-col">

@@ -16,13 +16,14 @@ import { loadLyricsFor } from "@/lyrics/lyricsStore";
 import {
   getAdvanceHandler,
   getCurrentTime,
+  hasUserInteracted,
   load,
   onAdvanceRequested,
   pause,
   play,
   seek,
 } from "@/player/engine";
-import { playerStore } from "@/player/playerStore";
+import { playerStore, setPlayerState } from "@/player/playerStore";
 import { queueStore } from "@/player/queueStore";
 import { DEFAULT_RADIO_STATION, type RadioManifestEntry, type RadioStationId } from "./manifest";
 import { entryToTrack, radioSlotAt, upNextEntry } from "./position";
@@ -41,6 +42,9 @@ export interface RadioState {
   loadedVideoId: string | null;
   /** UTC day whose schedule produced the current slot (midnight continuity). */
   day: string | null;
+  /** True while the slot is loaded but waiting on a user gesture to play
+   * audibly (see `unlockRadioPlayback`). */
+  needsGesture: boolean;
 }
 
 const IDLE: RadioState = {
@@ -51,6 +55,7 @@ const IDLE: RadioState = {
   next: null,
   loadedVideoId: null,
   day: null,
+  needsGesture: false,
 };
 
 /** How often the controller re-checks the deterministic slot for boundary or
@@ -71,6 +76,20 @@ function ensurePlaying(): void {
 }
 
 /**
+ * Whether audible playback is unlocked for this radio session: either the
+ * page had already seen a user interaction by the time `startRadio` ran (see
+ * `hasUserInteracted`), or `unlockRadioPlayback` has since run inside one.
+ * Entering `/radio` is just a route mount, not itself a gesture — the same
+ * reason `initPlayer` cues the restored queue track instead of playing it
+ * (see `player/controller.ts`) applies here on a genuinely fresh load. Until
+ * unlocked, slots are cued silently rather than played: requesting unmuted
+ * autoplay without any prior interaction is silently rejected by the
+ * browser, which left the embed paused forever with nothing to recover it —
+ * the "stuck on one second, no sound" bug.
+ */
+let unlocked = false;
+
+/**
  * Recomputes the deterministic slot and drives the embed to it.
  *
  * This is the single heal body: used by start, the advance-handler (track
@@ -85,16 +104,21 @@ function ensurePlaying(): void {
  * always restart the current track from 0:00 instead of joining mid-song.
  * When the video hasn't changed the embed is already loaded, so a direct
  * `seek()` is reliable (used for the midnight/refocus re-sync case).
+ *
+ * While `unlocked` is false, the slot is cued (not played) instead, exactly
+ * like a restored personal-queue track: audio starts only once
+ * `unlockRadioPlayback` runs inside a real click.
  */
 function refreshSlot(): void {
   const slot = radioSlotAt(epochNow(), loadedVideoId, stationId);
   if (slot.changed) {
     loadedVideoId = slot.entry.videoId;
-    load(slot.entry.videoId, true, slot.offsetInTrack);
+    load(slot.entry.videoId, unlocked, slot.offsetInTrack);
+    if (!unlocked) setPlayerState({ status: "paused" });
   } else {
     seek(slot.offsetInTrack);
   }
-  ensurePlaying();
+  if (unlocked) ensurePlaying();
   loadLyricsFor(entryToTrack(slot.entry));
   radioStore.set({
     active: true,
@@ -104,7 +128,20 @@ function refreshSlot(): void {
     next: upNextEntry(epochNow(), stationId),
     loadedVideoId,
     day: slot.day,
+    needsGesture: !unlocked,
   });
+}
+
+/**
+ * Unlocks audible playback. Call this from the click handler on the
+ * "tap to listen" prompt shown while `needsGesture` is true — nothing else
+ * can legally start unmuted audio, since only a call made synchronously
+ * inside a real user gesture satisfies the browser's autoplay policy.
+ */
+export function unlockRadioPlayback(): void {
+  if (!active || unlocked) return;
+  unlocked = true;
+  refreshSlot();
 }
 
 /** Last epoch second a heal actually ran, so a heal storm collapses to one
@@ -166,13 +203,17 @@ function onVisibilityChange(): void {
  *
  * Captures the personal queue's position and swaps the engine's advance
  * handler (so ending a radio track re-seeks to the next radio slot instead of
- * advancing the private queue). The first load is a user-initiated gesture,
- * which is what makes `autoplay` legal.
+ * advancing the private queue). Mounting is not itself a user gesture, so the
+ * initial slot is only cued; see `unlockRadioPlayback` for what starts audio.
  */
 export function startRadio(id: RadioStationId = DEFAULT_RADIO_STATION): void {
   if (active) return;
   active = true;
   stationId = id;
+  // Already interacted with the app before landing on /radio (clicked a nav
+  // link, pressed play elsewhere, ...): the browser already allows unmuted
+  // playback, so skip straight to it instead of gating on another tap.
+  unlocked = hasUserInteracted();
 
   const now = queueStore.get().nowPlaying;
   savedQueuePosition = now

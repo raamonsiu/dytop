@@ -66,7 +66,7 @@ export const UI_VISIBILITY_STATES = [
 ] as const;
 export type UiVisibility = (typeof UI_VISIBILITY_STATES)[number];
 
-export const DEFAULT_UI_VISIBILITY: UiVisibility = "auto";
+export const DEFAULT_UI_VISIBILITY: UiVisibility = "pinned";
 
 /**
  * Values written by earlier versions, mapped to their closest equivalent.
