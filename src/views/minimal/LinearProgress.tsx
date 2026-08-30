@@ -10,7 +10,7 @@ import { subscribeToTime } from "@/player/clock";
  * through state would re-render this subtree ~60 times a second to change two
  * short strings.
  */
-export function LinearProgress() {
+export function LinearProgress({ interactive = true }: { interactive?: boolean } = {}) {
   const elapsedRef = useRef<HTMLSpanElement>(null);
   const totalRef = useRef<HTMLSpanElement>(null);
 
@@ -32,7 +32,7 @@ export function LinearProgress() {
   return (
     <div className="flex items-center gap-3 text-xs tabular-nums text-muted-foreground">
       <span ref={elapsedRef}>0:00</span>
-      <ProgressSlider className="flex-1" />
+      <ProgressSlider className="flex-1" interactive={interactive} />
       <span ref={totalRef}>-:-</span>
     </div>
   );

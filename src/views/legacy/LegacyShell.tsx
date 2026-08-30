@@ -6,7 +6,11 @@ import {
 } from "@/backgrounds/backgroundsStore";
 import { useBackgroundRotation } from "@/backgrounds/useBackgroundRotation";
 import { useDynamicAccent } from "@/backgrounds/useDynamicAccent";
+import { ROUTES } from "@/constants/app";
+import { cn } from "@/lib/cn";
 import { usePref } from "@/lib/prefs";
+import { DEFAULT_RADIO_STATION, RADIO_STATIONS } from "@/radio/manifest";
+import { useRadio } from "@/radio/controller";
 import { resolveTheme } from "@/themes/themes";
 import { themeStyle } from "@/themes/themeStyle";
 import { PerimeterProgress } from "@/components/PerimeterProgress";
@@ -14,7 +18,7 @@ import { UiVisibilityControl } from "@/components/UiVisibilityControl";
 import { safeAreaOffset } from "@/lib/safeArea";
 import { useIsCompactLayout } from "@/lib/useIsCompactLayout";
 import { useUiVisibility } from "@/lib/useUiVisibility";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { LegacyNavbar } from "./LegacyNavbar";
 import { PlayerHud } from "./PlayerHud";
 
@@ -27,19 +31,27 @@ export function LegacyShell() {
   const scheme = usePref("colorScheme");
   const compact = useIsCompactLayout();
   const { state, chromeVisible, ringVisible, setState } = useUiVisibility();
+  const location = useLocation();
+  const isRadio = location.pathname === ROUTES.legacyRadio;
+  const radio = useRadio();
 
   const shellRef = useRef<HTMLDivElement>(null);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null);
-  const background = useActiveBackground();
+  const activeBackground = useActiveBackground();
+  // Radio ignores the user's uploaded background entirely: it gets its own
+  // code-defined placeholder (see the station registry) instead.
+  const background = isRadio ? null : activeBackground;
 
   useEffect(() => {
     void hydrateBackgrounds();
   }, []);
 
-  useBackgroundRotation();
+  useBackgroundRotation(!isRadio);
   // Writes --accent-override on this shell only, which is what keeps the
   // sampled colour from following the user into the minimal view.
   useDynamicAccent(shellRef, mediaRef, background?.id ?? null);
+
+  const radioStation = RADIO_STATIONS[radio.stationId ?? DEFAULT_RADIO_STATION];
 
   return (
     <div
@@ -48,12 +60,16 @@ export function LegacyShell() {
       style={themeStyle(resolveTheme("legacy", scheme))}
       className="relative h-full overflow-hidden"
     >
-      <BackgroundLayer entry={background} mediaRef={mediaRef} />
+      {isRadio ? (
+        <div aria-hidden className={cn("absolute inset-0", radioStation.background.className)} />
+      ) : (
+        <BackgroundLayer entry={background} mediaRef={mediaRef} />
+      )}
 
       <Outlet />
 
       <PerimeterProgress visible={ringVisible} />
-      <LegacyNavbar revealed={chromeVisible} />
+      <LegacyNavbar revealed={chromeVisible} radioMode={isRadio} />
 
       {compact ? (
         /*
@@ -70,12 +86,19 @@ export function LegacyShell() {
             paddingRight: safeAreaOffset("right", 1),
           }}
         >
-          <PlayerHud visible={chromeVisible} compact />
+          <PlayerHud
+            visible={chromeVisible}
+            compact
+            radio={isRadio ? { entry: radio.entry, next: radio.next } : null}
+          />
           <UiVisibilityControl state={state} onChange={setState} compact />
         </div>
       ) : (
         <>
-          <PlayerHud visible={chromeVisible} />
+          <PlayerHud
+            visible={chromeVisible}
+            radio={isRadio ? { entry: radio.entry, next: radio.next } : null}
+          />
           <UiVisibilityControl
             state={state}
             onChange={setState}

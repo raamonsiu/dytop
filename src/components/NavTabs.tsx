@@ -8,13 +8,14 @@ const TAB_CLASSES =
   "text-xs uppercase tracking-widest transition-colors " +
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
-/** Radio and history tabs, pointed at the current view's own routes. */
+/** Player, radio and history tabs, pointed at the current view's own routes. */
 export function NavTabs({ view }: { view: ViewName }) {
   const { t } = useTranslation();
   const routes = VIEW_ROUTES[view];
 
   return (
     <>
+      <Tab to={routes.player} label={t("nav.player")} />
       <Tab to={routes.radio} label={t("nav.radio")} />
       <Tab to={routes.history} label={t("nav.history")} />
     </>

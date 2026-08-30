@@ -3,9 +3,17 @@ import { cn } from "@/lib/cn";
 import { useNextUp } from "@/player/queueStore";
 
 /** A small hint at what plays after the current track, or nothing at the end of the queue. */
-export function NextUpIndicator({ compact = false }: { compact?: boolean }) {
+export function NextUpIndicator({
+  compact = false,
+  overrideNext,
+}: {
+  compact?: boolean;
+  /** Radio supplies its own "up next" (from the shared schedule) instead of the personal queue's. */
+  overrideNext?: { title: string; author?: string } | null;
+}) {
   const { t } = useTranslation();
-  const next = useNextUp();
+  const queueNext = useNextUp();
+  const next = overrideNext !== undefined ? overrideNext : queueNext;
 
   if (!next) return null;
 

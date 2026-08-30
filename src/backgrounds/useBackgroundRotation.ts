@@ -10,21 +10,21 @@ import { pickRandomBackground } from "./backgroundsStore";
  * The three modes come straight from the prototype: hold one image, rotate on a
  * timer, or change with the track. `fixed` deliberately does nothing.
  */
-export function useBackgroundRotation(): void {
+export function useBackgroundRotation(enabled = true): void {
   const mode = usePref("backgroundMode");
   const nowPlaying = useNowPlaying();
   const trackId = nowPlaying?.id ?? null;
 
   useEffect(() => {
-    if (mode !== "random") return;
+    if (!enabled || mode !== "random") return;
     const interval = setInterval(pickRandomBackground, BACKGROUND_ROTATION_MS);
     return () => clearInterval(interval);
-  }, [mode]);
+  }, [enabled, mode]);
 
   useEffect(() => {
     // Keyed on the track id, so this fires once per song change rather than on
     // every queue mutation.
-    if (mode !== "on-song-change" || !trackId) return;
+    if (!enabled || mode !== "on-song-change" || !trackId) return;
     pickRandomBackground();
-  }, [mode, trackId]);
+  }, [enabled, mode, trackId]);
 }

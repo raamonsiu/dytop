@@ -3,10 +3,14 @@
     "role": "ambient player"
   },
   "nav": {
+    "player": "player",
     "radio": "radio",
     "history": "history",
     "toLegacy": "legacy view",
     "toMinimal": "minimal view"
+  },
+  "radio": {
+    "offline": "Radio is offline"
   },
   "history": {
     "title": "history",
@@ -14,15 +18,13 @@
     "count_one": "{{count}} track",
     "count_other": "{{count}} tracks"
   },
-  "radio": {
-    "nothingPlaying": "Nothing playing"
-  },
   "player": {
     "play": "Play",
     "pause": "Pause",
     "next": "Next",
     "previous": "Previous",
     "seek": "Seek within the track",
+    "progress": "Playback progress",
     "pasteUrl": "Paste a YouTube URL…",
     "add": "add",
     "adding": "…",
@@ -30,7 +32,8 @@
     "addedPlaylist_one": "Added {{count}} track from the playlist.",
     "addedPlaylist_other": "Added {{count}} tracks from the playlist.",
     "playlistTruncated": "Added the first {{count}} of {{total}} tracks (playlist limit).",
-    "nextUp": "Next up"
+    "nextUp": "Next up",
+    "nothingPlaying": "Nothing playing"
   },
   "lyrics": {
     "loading": "Looking for lyrics…",

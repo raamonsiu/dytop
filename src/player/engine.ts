@@ -20,13 +20,26 @@ let initPromise: Promise<void> | null = null;
 let advanceHandler: (() => void) | null = null;
 
 /** A load requested before the embed was ready, replayed on ready. */
-let pending: { videoId: string; autoplay: boolean } | null = null;
+let pending: { videoId: string; autoplay: boolean; startSeconds: number } | null = null;
 
 let skipTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearSkipTimer(): void {
+  if (skipTimer) {
+    clearTimeout(skipTimer);
+    skipTimer = null;
+  }
+}
 
 /** Registers the callback fired when the current track ends or is skipped. */
 export function onAdvanceRequested(handler: () => void): void {
   advanceHandler = handler;
+}
+
+/** The currently registered advance callback, so callers can swap it in and
+ * restore it later (the radio controller does exactly this). */
+export function getAdvanceHandler(): (() => void) | null {
+  return advanceHandler;
 }
 
 /**
@@ -73,7 +86,7 @@ function handleError(event: YT.OnErrorEvent): void {
   // fault breaks every video identically, so skipping would silently chew
   // through the whole queue instead of showing the problem once.
   if (SKIPPABLE_YT_ERROR_CODES.has(code)) {
-    if (skipTimer) clearTimeout(skipTimer);
+    clearSkipTimer();
     skipTimer = setTimeout(() => advanceHandler?.(), ERROR_SKIP_DELAY_MS);
   }
 }
@@ -85,9 +98,9 @@ function markReady(): void {
   setPlayerState({ ready: true });
 
   if (pending) {
-    const { videoId, autoplay } = pending;
+    const { videoId, autoplay, startSeconds } = pending;
     pending = null;
-    load(videoId, autoplay);
+    load(videoId, autoplay, startSeconds);
   }
 }
 
@@ -131,27 +144,32 @@ export function initEngine(mount: HTMLElement): Promise<void> {
   return initPromise;
 }
 
-/** Loads a video, playing or just cueing it. Queues the request if the embed isn't ready yet. */
-export function load(videoId: string, autoplay: boolean): void {
-  if (skipTimer) {
-    clearTimeout(skipTimer);
-    skipTimer = null;
-  }
+/**
+ * Loads a video, playing or just cueing it, optionally starting mid-track.
+ * Queues the request if the embed isn't ready yet.
+ *
+ * `startSeconds` is passed straight to the IFrame API's load/cue call rather
+ * than applied via a follow-up `seek()`: calling `seekTo` right after
+ * `loadVideoById` races the embed's own (asynchronous) load and is frequently
+ * ignored, which is what silently restarted radio at 0:00 on every page load.
+ */
+export function load(videoId: string, autoplay: boolean, startSeconds = 0): void {
+  clearSkipTimer();
   setPlayerState({ errorKey: null, duration: 0, status: "loading" });
 
   if (!ready || !player) {
     // Replayed by markReady(). Only the latest request is kept: queueing them
     // would play through every skipped track once the player woke up.
-    pending = { videoId, autoplay };
+    pending = { videoId, autoplay, startSeconds };
     return;
   }
 
   if (autoplay) {
-    player.loadVideoById({ videoId });
+    player.loadVideoById({ videoId, startSeconds });
   } else {
     // cueVideoById loads metadata without starting playback, which is what a
     // restored session needs: browsers reject autoplay without a user gesture.
-    player.cueVideoById({ videoId });
+    player.cueVideoById({ videoId, startSeconds });
   }
 }
 
@@ -159,7 +177,17 @@ export function play(): void {
   player?.playVideo();
 }
 
+/**
+ * Pauses, and cancels any pending error-skip.
+ *
+ * Without this, stopping radio while a blocked-video skip was still pending
+ * (and there was no personal-queue track to restore, so this is the branch
+ * taken instead of `load()`) left the timer armed against the just-restored
+ * queue advance handler: it would later fire and silently advance the queue
+ * on its own, with no video error involved.
+ */
 export function pause(): void {
+  clearSkipTimer();
   player?.pauseVideo();
 }
 

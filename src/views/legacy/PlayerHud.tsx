@@ -22,9 +22,25 @@ import { NextUpIndicator } from "./NextUpIndicator";
  * prototype. The choice persists, since it's a preference about how you read
  * time rather than a momentary peek.
  */
-export function PlayerHud({ visible, compact = false }: { visible: boolean; compact?: boolean }) {
+interface RadioHudInfo {
+  entry: { title: string; author: string } | null;
+  next: { title: string; author: string } | null;
+}
+
+export function PlayerHud({
+  visible,
+  compact = false,
+  radio = null,
+}: {
+  visible: boolean;
+  compact?: boolean;
+  /** Radio mode: no transport, no seek, track/next come from the shared
+   * schedule instead of the personal queue. */
+  radio?: RadioHudInfo | null;
+}) {
   const { t } = useTranslation();
-  const track = useNowPlaying();
+  const queueTrack = useNowPlaying();
+  const track = radio ? radio.entry : queueTrack;
   const isPlaying = useIsPlaying();
   const showRemaining = usePref("showRemainingTime");
   const timeRef = useRef<HTMLSpanElement>(null);
@@ -67,7 +83,7 @@ export function PlayerHud({ visible, compact = false }: { visible: boolean; comp
     [showRemaining],
   );
 
-  const transport = (
+  const transport = radio ? null : (
     <div className="flex items-center gap-1">
       <IconButton onClick={playPrevious} aria-label={t("player.previous")}>
         <SkipBack size={14} />
@@ -98,7 +114,7 @@ export function PlayerHud({ visible, compact = false }: { visible: boolean; comp
   const trackInfo = (
     <div className={cn("min-w-0", compact ? "block" : "hidden max-w-56 sm:block")}>
       <p className="truncate font-blobby text-xs" title={track?.title}>
-        {track?.title ?? t("radio.nothingPlaying")}
+        {track?.title ?? t("player.nothingPlaying")}
       </p>
       <p className="truncate text-[11px] text-muted-foreground">{track?.author}</p>
     </div>
@@ -149,7 +165,7 @@ export function PlayerHud({ visible, compact = false }: { visible: boolean; comp
           }}
           inert={!scrubberVisible}
         >
-          <ProgressSlider thick />
+          <ProgressSlider thick interactive={!radio} />
         </div>
       )}
 
@@ -162,7 +178,7 @@ export function PlayerHud({ visible, compact = false }: { visible: boolean; comp
         {compact ? (
           <>
             {trackInfo}
-            <ProgressSlider thick />
+            <ProgressSlider thick interactive={!radio} />
             <div className="flex items-center justify-between gap-3">
               {transport}
               {clock}
@@ -177,7 +193,10 @@ export function PlayerHud({ visible, compact = false }: { visible: boolean; comp
         )}
       </div>
 
-      <NextUpIndicator compact={compact} />
+      <NextUpIndicator
+        compact={compact}
+        overrideNext={radio ? (radio.next ?? null) : undefined}
+      />
     </div>
   );
 }

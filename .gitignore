@@ -3,3 +3,5 @@ dist/
 .DS_Store
 *.local
 .claude/
+__pycache__/
+manifest.generated.ts

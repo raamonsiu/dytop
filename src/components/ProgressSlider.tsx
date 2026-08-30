@@ -14,6 +14,9 @@ interface ProgressSliderProps {
   className?: string;
   /** Legacy wants a chunkier bar than the hairline D1 uses. */
   thick?: boolean;
+  /** False for radio: shows position but isn't seekable, since scrubbing
+   * would fight the shared clock that keeps every listener in sync. */
+  interactive?: boolean;
 }
 
 /**
@@ -28,7 +31,11 @@ interface ProgressSliderProps {
  * Seeking on every pointer move would fire dozens of cross-frame calls into the
  * YouTube player for one gesture, and it stutters badly.
  */
-export function ProgressSlider({ className, thick = false }: ProgressSliderProps) {
+export function ProgressSlider({
+  className,
+  thick = false,
+  interactive = true,
+}: ProgressSliderProps) {
   const { t } = useTranslation();
   const trackRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
@@ -131,22 +138,24 @@ export function ProgressSlider({ className, thick = false }: ProgressSliderProps
   return (
     <div
       ref={rootRef}
-      role="slider"
-      tabIndex={0}
-      aria-label={t("player.seek")}
+      role={interactive ? "slider" : "progressbar"}
+      tabIndex={interactive ? 0 : -1}
+      aria-label={t(interactive ? "player.seek" : "player.progress")}
       aria-valuemin={0}
       aria-valuemax={0}
       aria-valuenow={0}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-      onKeyDown={handleKeyDown}
+      onPointerDown={interactive ? handlePointerDown : undefined}
+      onPointerMove={interactive ? handlePointerMove : undefined}
+      onPointerUp={interactive ? handlePointerUp : undefined}
+      onPointerCancel={interactive ? handlePointerUp : undefined}
+      onKeyDown={interactive ? handleKeyDown : undefined}
       className={cn(
         // The padding is the point: it triples the grabbable height without
         // changing anything you can see.
-        "group/slider relative flex cursor-pointer touch-none items-center py-2",
-        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent",
+        "group/slider relative flex items-center py-2",
+        interactive && "cursor-pointer touch-none",
+        interactive &&
+          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent",
         className,
       )}
     >
@@ -154,7 +163,7 @@ export function ProgressSlider({ className, thick = false }: ProgressSliderProps
         ref={trackRef}
         className={cn(
           "relative w-full rounded-full bg-surface-border transition-[height]",
-          thick ? "h-1" : "h-px group-hover/slider:h-0.5",
+          thick ? "h-1" : cn("h-px", interactive && "group-hover/slider:h-0.5"),
         )}
       >
         <div

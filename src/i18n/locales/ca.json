@@ -3,10 +3,14 @@
     "role": "reproductor ambient"
   },
   "nav": {
+    "player": "reproductor",
     "radio": "ràdio",
     "history": "historial",
     "toLegacy": "vista legacy",
     "toMinimal": "vista minimal"
+  },
+  "radio": {
+    "offline": "La ràdio està sense connexió"
   },
   "history": {
     "title": "historial",
@@ -14,15 +18,13 @@
     "count_one": "{{count}} tema",
     "count_other": "{{count}} temes"
   },
-  "radio": {
-    "nothingPlaying": "No sona res"
-  },
   "player": {
     "play": "Reprodueix",
     "pause": "Pausa",
     "next": "Següent",
     "previous": "Anterior",
     "seek": "Vés a un punt de la pista",
+    "progress": "Progrés de la reproducció",
     "pasteUrl": "Enganxa una URL de YouTube…",
     "add": "afegeix",
     "adding": "…",
@@ -30,7 +32,8 @@
     "addedPlaylist_one": "Afegit {{count}} tema de la llista.",
     "addedPlaylist_other": "Afegits {{count}} temes de la llista.",
     "playlistTruncated": "Afegits els primers {{count}} de {{total}} temes (límit de la llista).",
-    "nextUp": "Tot seguit"
+    "nextUp": "Tot seguit",
+    "nothingPlaying": "No sona res"
   },
   "lyrics": {
     "loading": "Cercant la lletra…",

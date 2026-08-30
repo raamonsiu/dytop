@@ -1,18 +1,43 @@
 /** Single source of truth for paths, so links and the startup redirect can't
  * drift from the route table. */
 export const ROUTES = {
-  radio: "/",
+  player: "/",
   history: "/history",
   legacy: "/legacy",
   legacyHistory: "/legacy/history",
+  liveRadio: "/radio",
+  legacyRadio: "/legacy/radio",
 } as const;
 
-/** Each view has its own radio and history, so switching tabs never switches
+/** Each view has its own player and history, so switching tabs never switches
  * visual mode. */
 export const VIEW_ROUTES = {
-  minimal: { radio: ROUTES.radio, history: ROUTES.history },
-  legacy: { radio: ROUTES.legacy, history: ROUTES.legacyHistory },
+  minimal: {
+    player: ROUTES.player,
+    history: ROUTES.history,
+    radio: ROUTES.liveRadio,
+  },
+  legacy: {
+    player: ROUTES.legacy,
+    history: ROUTES.legacyHistory,
+    radio: ROUTES.legacyRadio,
+  },
 } as const;
+
+export type ViewTab = keyof (typeof VIEW_ROUTES)["minimal"];
+
+/**
+ * Which tab (player/radio/history) a pathname belongs to, for the given view.
+ *
+ * Used to carry the active tab across the view toggle: switching from
+ * `/legacy/radio` to minimal should land on `/radio`, not always reset to the
+ * player tab.
+ */
+export function tabForPath(view: keyof typeof VIEW_ROUTES, pathname: string): ViewTab {
+  const routes = VIEW_ROUTES[view];
+  const tab = (Object.keys(routes) as ViewTab[]).find((key) => routes[key] === pathname);
+  return tab ?? "player";
+}
 
 /** localStorage namespace. Everything the app persists outside IndexedDB lives
  * under this one key as a single JSON blob. */

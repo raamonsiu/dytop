@@ -25,7 +25,7 @@ export function RootLayout() {
 
     // Only a bare "/" is treated as "no opinion". A deep link is an explicit
     // request and always wins over the remembered view.
-    if (location.pathname === ROUTES.radio && getPrefs().lastView === "legacy") {
+    if (location.pathname === ROUTES.player && getPrefs().lastView === "legacy") {
       void navigate(ROUTES.legacy, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- first paint only

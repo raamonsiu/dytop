@@ -8,14 +8,14 @@ import type { ViewName } from "@/themes/tokens";
  * The wordmark, matching the D1ITO portfolio's header: pixel display face,
  * IPA transcription beside it, role underneath in wide-tracked caps.
  *
- * Links to the current view's own radio route, so the logo never doubles as a
+ * Links to the current view's own player route, so the logo never doubles as a
  * way out of the mode you're in.
  */
 export function Brand({ view }: { view: ViewName }) {
   const { t } = useTranslation();
 
   return (
-    <Link to={VIEW_ROUTES[view].radio} className="leading-tight">
+    <Link to={VIEW_ROUTES[view].player} className="leading-tight">
       <span className="flex items-baseline gap-2">
         <span
           className={cn(

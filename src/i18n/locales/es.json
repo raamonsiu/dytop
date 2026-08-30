@@ -3,10 +3,14 @@
     "role": "reproductor ambient"
   },
   "nav": {
+    "player": "reproductor",
     "radio": "radio",
     "history": "historial",
     "toLegacy": "vista legacy",
     "toMinimal": "vista minimal"
+  },
+  "radio": {
+    "offline": "La radio está sin conexión"
   },
   "history": {
     "title": "historial",
@@ -14,15 +18,13 @@
     "count_one": "{{count}} tema",
     "count_other": "{{count}} temas"
   },
-  "radio": {
-    "nothingPlaying": "Nada sonando"
-  },
   "player": {
     "play": "Reproducir",
     "pause": "Pausar",
     "next": "Siguiente",
     "previous": "Anterior",
     "seek": "Ir a un punto de la pista",
+    "progress": "Progreso de reproducción",
     "pasteUrl": "Pega una URL de YouTube…",
     "add": "añadir",
     "adding": "…",
@@ -30,7 +32,8 @@
     "addedPlaylist_one": "Añadido {{count}} tema de la lista.",
     "addedPlaylist_other": "Añadidos {{count}} temas de la lista.",
     "playlistTruncated": "Añadidos los primeros {{count}} de {{total}} temas (límite de la lista).",
-    "nextUp": "A continuación"
+    "nextUp": "A continuación",
+    "nothingPlaying": "Nada sonando"
   },
   "lyrics": {
     "loading": "Buscando letra…",

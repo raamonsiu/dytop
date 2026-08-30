@@ -13,7 +13,7 @@ import { DitherBackground } from "./DitherBackground";
 import { MinimalNav } from "./MinimalNav";
 
 /**
- * Chrome shared by the radio and history routes: the palette, the nav, the
+ * Chrome shared by the player and history routes: the palette, the nav, the
  * dither backdrop and the progress ring.
  *
  * The backdrop sits here rather than inside either route so that switching

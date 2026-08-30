@@ -8,7 +8,15 @@ import type { Track } from "@/player/types";
 import { LinearProgress } from "./LinearProgress";
 import { LyricsDelayControl } from "./LyricsDelayControl";
 
-export function NowPlayingCard({ track }: { track: Track }) {
+export function NowPlayingCard({
+  track,
+  interactive = true,
+}: {
+  track: Track;
+  /** False for radio: no pause/skip, since there's nothing to skip to and
+   * pausing would just drift out of sync with the shared clock. */
+  interactive?: boolean;
+}) {
   const { t } = useTranslation();
   const isPlaying = useIsPlaying();
 
@@ -38,20 +46,24 @@ export function NowPlayingCard({ track }: { track: Track }) {
           <p className="truncate text-xs text-muted-foreground">{track.author}</p>
         </div>
 
-        <LinearProgress />
+        <LinearProgress interactive={interactive} />
 
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <IconButton
-              onClick={togglePlayPause}
-              aria-label={t(isPlaying ? "player.pause" : "player.play")}
-            >
-              {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-            </IconButton>
-            <IconButton onClick={playNext} aria-label={t("player.next")}>
-              <SkipForward size={14} />
-            </IconButton>
-          </div>
+          {interactive ? (
+            <div className="flex items-center gap-2">
+              <IconButton
+                onClick={togglePlayPause}
+                aria-label={t(isPlaying ? "player.pause" : "player.play")}
+              >
+                {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+              </IconButton>
+              <IconButton onClick={playNext} aria-label={t("player.next")}>
+                <SkipForward size={14} />
+              </IconButton>
+            </div>
+          ) : (
+            <div />
+          )}
           <LyricsDelayControl />
         </div>
       </div>
