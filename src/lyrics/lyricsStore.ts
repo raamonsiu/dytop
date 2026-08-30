@@ -1,6 +1,6 @@
 import { createStore, useStore } from "@/lib/createStore";
 import type { Track } from "@/player/types";
-import { fetchLyrics } from "./lrclibClient";
+import { fetchLyrics } from "./providers";
 import type { LyricLine } from "./parseLRC";
 
 export type LyricsState =

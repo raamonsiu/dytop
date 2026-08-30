@@ -1,12 +1,7 @@
-import { parseLRC, type LyricLine } from "./parseLRC";
+import { parseLRC } from "./parseLRC";
+import type { LyricsResult } from "./types";
 
 export const LRCLIB_BASE = "https://lrclib.net/api";
-
-export type LyricsResult =
-  | { status: "synced"; lines: LyricLine[] }
-  | { status: "plain"; text: string }
-  | { status: "not-found" }
-  | { status: "error" };
 
 interface LrclibRecord {
   syncedLyrics?: string | null;
