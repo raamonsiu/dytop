@@ -94,9 +94,28 @@ export function subscribeToTime(listener: TimeListener): () => void {
   };
 }
 
-/** Forces an immediate re-read. Called after a seek, where waiting up to a
- * poll interval would let the UI snap back to the old position. */
-export function resyncClock(): void {
+/**
+ * Forces an immediate re-read, or, given `optimisticSeconds`, pretends the
+ * embed already landed there.
+ *
+ * Called right after a seek. Reading the embed at that point (the no-arg
+ * path) is what this used to do, but the IFrame API's `seekTo` crosses a
+ * postMessage bridge: `getCurrentTime()` called immediately after still
+ * answers with the pre-seek position, so polling here snapped the bar back
+ * to where it was for the ~300ms until the embed actually caught up — a
+ * flicker on a quick click, and a stale target for a second quick click to
+ * land on instead of its own. Trusting the seek's own target instead avoids
+ * reading the embed before it's ready to answer correctly; the next regular
+ * poll then confirms it once the embed catches up.
+ */
+export function resyncClock(optimisticSeconds?: number): void {
+  if (optimisticSeconds !== undefined) {
+    polledTime = optimisticSeconds;
+    polledAt = performance.now();
+    emit();
+    return;
+  }
+
   poll();
   emit();
 }

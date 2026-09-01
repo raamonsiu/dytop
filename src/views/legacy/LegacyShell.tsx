@@ -103,7 +103,8 @@ export function LegacyShell() {
             state={state}
             onChange={setState}
             // Bottom-left: top-right sits under the navbar once it wraps to two
-            // rows on a narrow screen, and bottom-right is PlayerHud's corner.
+            // rows on a narrow screen, and PlayerHud now owns the bottom
+            // centre rather than a corner.
             className="fixed bottom-4 left-4 z-50"
             style={{
               left: safeAreaOffset("left", 1),

@@ -123,18 +123,28 @@ export function PlayerHud({
   return (
     <div
       className={cn(
-        "z-40 transition-opacity duration-500",
-        compact ? "relative w-full" : "fixed bottom-4 right-4",
+        "z-40 select-none transition-opacity duration-500",
+        // select-none: a fast scrub drag routinely strays off the thin bar
+        // onto the track info, clock or the reveal panel around it. Pointer
+        // capture keeps the drag itself tracking correctly, but the
+        // browser's rendered cursor still follows normal hit-testing under
+        // the pointer, so unselectable text is what keeps it a plain cursor
+        // instead of an I-beam mid-drag.
+        //
+        // Centred to match the minimal view's mini player instead of hugging
+        // a corner: fixed + inset-x-0 + a centred flex column keeps it on the
+        // midline at any viewport width without needing a transform hack.
+        compact ? "relative w-full" : "fixed inset-x-0 flex flex-col items-center",
       )}
       style={{
         opacity: visible ? 1 : 0,
         // max() clears the home-indicator/rounded-corner area on notched
         // phones without pushing the HUD in on ordinary screens. When compact
-        // the parent stack owns the insets instead.
+        // the parent stack owns the insets instead. No horizontal offset is
+        // needed here since centring already keeps clear of side notches.
         ...(compact
           ? null
           : {
-              right: safeAreaOffset("right", 1),
               bottom: safeAreaOffset("bottom", 1),
             }),
       }}
@@ -150,47 +160,52 @@ export function PlayerHud({
       onFocusCapture={compact ? undefined : showScrubber}
       onBlurCapture={compact ? undefined : scheduleHideScrubber}
     >
-      {/*
-        Rises out from behind the mini-player rather than appearing beside it,
-        so the HUD keeps its footprint until you actually reach for the bar.
-        Compact puts the same slider inline instead: there is no hover to rise
-        on, and a bar floating over the content has nowhere to go.
-      */}
-      {compact ? null : (
-        <div
-          className="absolute inset-x-0 bottom-full mb-2 rounded-view border border-glass-border bg-glass-strong px-4 py-1 backdrop-blur-xl transition-all duration-300"
-          style={{
-            opacity: scrubberVisible ? 1 : 0,
-            transform: scrubberVisible ? "translateY(0)" : "translateY(0.75rem)",
-          }}
-          inert={!scrubberVisible}
-        >
-          <ProgressSlider thick interactive={!radio} />
-        </div>
-      )}
-
-      <div
-        className={cn(
-          "rounded-view border border-glass-border bg-glass-strong backdrop-blur-xl",
-          compact ? "flex flex-col gap-1 px-4 py-2" : "flex items-center gap-3 px-4 py-3",
-        )}
-      >
-        {compact ? (
-          <>
-            {trackInfo}
+      <div className={compact ? "w-full" : "relative"}>
+        {/*
+          Rises out from behind the mini-player rather than appearing beside
+          it, so the HUD keeps its footprint until you actually reach for the
+          bar. Compact puts the same slider inline instead: there is no hover
+          to rise on, and a bar floating over the content has nowhere to go.
+          Scoped to this content-width wrapper (not the centred outer flex
+          container, which spans the full viewport) so it matches the
+          mini-player's width instead of the screen's.
+        */}
+        {compact ? null : (
+          <div
+            className="absolute inset-x-0 bottom-full mb-2 rounded-view border border-glass-border bg-glass-strong px-4 py-1 backdrop-blur-xl transition-all duration-300"
+            style={{
+              opacity: scrubberVisible ? 1 : 0,
+              transform: scrubberVisible ? "translateY(0)" : "translateY(0.75rem)",
+            }}
+            inert={!scrubberVisible}
+          >
             <ProgressSlider thick interactive={!radio} />
-            <div className="flex items-center justify-between gap-3">
-              {transport}
-              {clock}
-            </div>
-          </>
-        ) : (
-          <>
-            {transport}
-            {trackInfo}
-            {clock}
-          </>
+          </div>
         )}
+
+        <div
+          className={cn(
+            "rounded-view border border-glass-border bg-glass-strong backdrop-blur-xl",
+            compact ? "flex flex-col gap-1 px-4 py-2" : "flex items-center gap-3 px-4 py-3",
+          )}
+        >
+          {compact ? (
+            <>
+              {trackInfo}
+              <ProgressSlider thick interactive={!radio} />
+              <div className="flex items-center justify-between gap-3">
+                {transport}
+                {clock}
+              </div>
+            </>
+          ) : (
+            <>
+              {transport}
+              {trackInfo}
+              {clock}
+            </>
+          )}
+        </div>
       </div>
 
       <NextUpIndicator

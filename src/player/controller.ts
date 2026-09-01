@@ -6,6 +6,7 @@ import { loadLyricsFor } from "@/lyrics/lyricsStore";
 import { resyncClock } from "./clock";
 import {
   getCurrentTime,
+  getLoadGeneration,
   initEngine,
   load,
   onAdvanceRequested,
@@ -43,14 +44,35 @@ let initPromise: Promise<void> | null = null;
 export function initPlayer(mount: HTMLElement): Promise<void> {
   if (initPromise) return initPromise;
 
+  // Snapshot before anything below awaits: if something else (radio's
+  // `startRadio`, whose effect can run in the same tick as this one, mounted
+  // alongside it in RootLayout) calls `load()` on the shared embed before
+  // `hydrateQueue`/`initEngine` resolve, the generation will have moved on by
+  // the time they do, and this restore's effects on the embed/lyrics must be
+  // skipped rather than clobbering radio's already-loaded track — this was
+  // the "audio plays song A, radio UI shows song B" bug on a fresh session's
+  // first direct visit to /radio.
+  const generationAtInit = getLoadGeneration();
+
   // Lyrics follow the queue rather than being fetched at each call site, so
   // every path that changes the track, advance, jump, restore, error skip,
   // gets them without remembering to ask.
+  //
+  // The very first firing is special-cased: it's `hydrateQueue()` (awaited
+  // further down) writing the restored track into `queueStore` asynchronously,
+  // which happens whether or not the embed itself still belongs to this
+  // restore by the time it lands. Skip only that first, possibly-stale
+  // firing when the generation has moved on; every later firing is a real
+  // queue change (advance/jump/etc.) and always applies.
   let lastTrackId: string | null = null;
+  let isFirstFiring = true;
   queueStore.subscribe(() => {
     const track = queueStore.get().nowPlaying;
     if (track?.id === lastTrackId) return;
     lastTrackId = track?.id ?? null;
+    const wasFirstFiring = isFirstFiring;
+    isFirstFiring = false;
+    if (wasFirstFiring && getLoadGeneration() !== generationAtInit) return;
     loadLyricsFor(track);
   });
 
@@ -65,7 +87,7 @@ export function initPlayer(mount: HTMLElement): Promise<void> {
 
   initPromise = (async () => {
     const [restored] = await Promise.all([hydrateQueue(), initEngine(mount)]);
-    if (restored.nowPlaying) {
+    if (restored.nowPlaying && getLoadGeneration() === generationAtInit) {
       load(restored.nowPlaying.videoId, false);
       setPlayerState({ status: "paused" });
     }
@@ -168,7 +190,8 @@ export function playTrack(trackId: string): void {
 
 export function seekTo(seconds: number): void {
   seek(seconds);
-  // Without this the progress bar snaps back to the pre-seek position until
-  // the next poll lands, up to 300 ms later.
-  resyncClock();
+  // Optimistic: reading the embed immediately after `seek()` would still see
+  // the pre-seek position (the IFrame API's seekTo is asynchronous), which is
+  // what caused the bar to flicker back on a quick click. See resyncClock.
+  resyncClock(seconds);
 }

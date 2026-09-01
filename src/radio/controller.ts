@@ -178,6 +178,20 @@ let loadedVideoId: string | null = null;
 let tickId: ReturnType<typeof setInterval> | null = null;
 let visibilityHandler: (() => void) | null = null;
 
+/**
+ * Guards against the legacy/minimal radio views' stop/start pair from
+ * stuttering the embed when a view switch swaps `LegacyRadioView` for
+ * `RadioView` (or back) while radio is already playing: React unmounts the
+ * old leaf route and mounts the new one for the same `/radio` session in the
+ * same commit, calling this module's `stopRadio()` immediately followed by
+ * `startRadio()`. Without this, `stopRadio()` would pause the embed and drop
+ * `loadedVideoId`, making the immediate `startRadio()` see a "changed" slot
+ * for the *same* video and reload it — an audible stutter for no real state
+ * change. Deferring the teardown to a microtask lets the paired `startRadio()`
+ * cancel it outright when it runs first.
+ */
+let pendingStop: Promise<void> | null = null;
+
 function scheduleTick(): void {
   if (tickId) return;
   tickId = setInterval(() => {
@@ -207,6 +221,14 @@ function onVisibilityChange(): void {
  * initial slot is only cued; see `unlockRadioPlayback` for what starts audio.
  */
 export function startRadio(id: RadioStationId = DEFAULT_RADIO_STATION): void {
+  // A stop/start pair from a legacy/minimal view swap (see `pendingStop`):
+  // cancel the deferred teardown and keep the embed exactly as it was,
+  // instead of tearing down and immediately re-loading the same slot.
+  if (pendingStop) {
+    pendingStop = null;
+    return;
+  }
+
   if (active) return;
   active = true;
   stationId = id;
@@ -238,6 +260,21 @@ export function startRadio(id: RadioStationId = DEFAULT_RADIO_STATION): void {
  */
 export function stopRadio(): void {
   if (!active) return;
+
+  // Deferred by one microtask so a same-tick `startRadio()` — the
+  // legacy/minimal view swap case — can cancel this before any of it runs.
+  // A genuine "leave radio" (navigating to the player/history tab) has no
+  // such follow-up call, so it proceeds on the next microtask exactly as
+  // before, just one tick later than an unavoidably imperceptible delay.
+  const stop = Promise.resolve().then(() => {
+    if (pendingStop !== stop) return;
+    pendingStop = null;
+    runStop();
+  });
+  pendingStop = stop;
+}
+
+function runStop(): void {
   active = false;
 
   if (tickId) {

@@ -47,6 +47,21 @@ let advanceHandler: (() => void) | null = null;
 /** A load requested before the embed was ready, replayed on ready. */
 let pending: { videoId: string; autoplay: boolean; startSeconds: number } | null = null;
 
+/**
+ * Bumped on every `load()` call. Lets a caller that kicked off async work
+ * before its own `load()` (e.g. the queue restore in `initPlayer`, which
+ * awaits `hydrateQueue`/`initEngine` first) notice that something else
+ * (radio's `startRadio`, mounted in the same tick) has since loaded a
+ * different track, and skip its now-stale load instead of clobbering it.
+ */
+let loadGeneration = 0;
+
+/** The current load generation, for callers that need to detect a load that
+ * happened while they were awaiting something else. See `loadGeneration`. */
+export function getLoadGeneration(): number {
+  return loadGeneration;
+}
+
 let skipTimer: ReturnType<typeof setTimeout> | null = null;
 
 function clearSkipTimer(): void {
@@ -179,6 +194,7 @@ export function initEngine(mount: HTMLElement): Promise<void> {
  * ignored, which is what silently restarted radio at 0:00 on every page load.
  */
 export function load(videoId: string, autoplay: boolean, startSeconds = 0): void {
+  loadGeneration++;
   clearSkipTimer();
   setPlayerState({ errorKey: null, duration: 0, status: "loading" });
 

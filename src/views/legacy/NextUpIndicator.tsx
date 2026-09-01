@@ -21,9 +21,9 @@ export function NextUpIndicator({
     <p
       className={cn(
         "mt-1.5 truncate text-[11px] text-muted-foreground",
-        // Follows the HUD: right-aligned under a corner widget, left-aligned
+        // Follows the HUD: centred under the now-centred widget, left-aligned
         // and full-width under a stacked row.
-        compact ? "px-1 text-left" : "max-w-56 text-right",
+        compact ? "px-1 text-left" : "max-w-56 text-center",
       )}
     >
       <span className="uppercase tracking-widest">{t("player.nextUp")}</span> {next.title}

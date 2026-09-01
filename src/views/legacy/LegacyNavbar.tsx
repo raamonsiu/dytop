@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Image, ListMusic, Plus, Type } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Brand } from "@/components/Brand";
@@ -58,15 +58,21 @@ export function LegacyNavbar({
           "px-2 py-1 sm:px-3",
         )}
       >
-        <Brand view="legacy" />
-        <span aria-hidden className="mx-1 h-4 w-px bg-glass-border sm:mx-2" />
-        <NavTabs view="legacy" />
-        <span aria-hidden className="mx-1 h-4 w-px bg-glass-border sm:mx-2" />
-
-        {radioMode ? null : <PanelControls />}
-
-        <span aria-hidden className="mx-1 h-4 w-px bg-glass-border" />
-        <ViewToggle current="legacy" className="px-2" />
+        {[
+          <Brand key="brand" view="legacy" />,
+          <NavTabs key="tabs" view="legacy" />,
+          radioMode ? null : <PanelControls key="panels" />,
+          <ViewToggle key="view-toggle" current="legacy" className="px-2" />,
+        ]
+          .filter((section) => section !== null)
+          .map((section, index) => (
+            <Fragment key={section.key}>
+              {index > 0 && (
+                <span aria-hidden className="mx-1 h-4 w-px bg-glass-border sm:mx-2" />
+              )}
+              {section}
+            </Fragment>
+          ))}
       </nav>
     </header>
   );

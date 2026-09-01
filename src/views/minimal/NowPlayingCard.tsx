@@ -21,7 +21,15 @@ export function NowPlayingCard({
   const isPlaying = useIsPlaying();
 
   return (
-    <article className="flex w-full max-w-xl gap-5 border border-surface-border bg-surface/80 p-5 backdrop-blur-md short:gap-3 short:p-3">
+    <article
+      // select-none: a fast scrub drag routinely strays a few px off the
+      // thin bar onto the title/author text or buttons around it. Pointer
+      // capture keeps the drag itself working correctly, but the browser's
+      // rendered cursor still follows normal hit-testing under the pointer,
+      // so unselectable text is what keeps it a plain cursor instead of an
+      // I-beam mid-drag.
+      className="flex w-full max-w-xl select-none gap-5 border border-surface-border bg-surface/80 p-5 backdrop-blur-md short:gap-3 short:p-3"
+    >
       <img
         src={track.thumb}
         alt=""
