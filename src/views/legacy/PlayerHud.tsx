@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { ProgressSlider } from "@/components/ProgressSlider";
+import { VolumeSlider } from "@/components/VolumeSlider";
 import { IconButton } from "@/components/ui/IconButton";
 import { cn } from "@/lib/cn";
 import { formatRemaining, formatTime } from "@/lib/format";
@@ -151,8 +152,9 @@ export function PlayerHud({
       // Hidden chrome must not be clickable or focusable, or tabbing would
       // land on invisible controls.
       inert={!visible}
-      // Hover reveals the scrubber only in the corner-widget layout; the
-      // compact one shows it permanently, so there is nothing to reveal.
+      // Hover reveals the scrubber (and, alongside it, the volume meter) only
+      // in the corner-widget layout; the compact one shows both permanently,
+      // so there is nothing to reveal.
       onPointerEnter={compact ? undefined : showScrubber}
       onPointerLeave={compact ? undefined : scheduleHideScrubber}
       // Keyboard users never fire pointerenter, so the scrubber would be
@@ -160,53 +162,59 @@ export function PlayerHud({
       onFocusCapture={compact ? undefined : showScrubber}
       onBlurCapture={compact ? undefined : scheduleHideScrubber}
     >
-      <div className={compact ? "w-full" : "relative"}>
-        {/*
-          Rises out from behind the mini-player rather than appearing beside
-          it, so the HUD keeps its footprint until you actually reach for the
-          bar. Compact puts the same slider inline instead: there is no hover
-          to rise on, and a bar floating over the content has nowhere to go.
-          Scoped to this content-width wrapper (not the centred outer flex
-          container, which spans the full viewport) so it matches the
-          mini-player's width instead of the screen's.
-        */}
-        {compact ? null : (
-          <div
-            className="absolute inset-x-0 bottom-full mb-2 rounded-view border border-glass-border bg-glass-strong px-4 py-1 backdrop-blur-xl transition-all duration-300"
-            style={{
-              opacity: scrubberVisible ? 1 : 0,
-              transform: scrubberVisible ? "translateY(0)" : "translateY(0.75rem)",
-            }}
-            inert={!scrubberVisible}
-          >
+      {compact ? (
+        <div className="w-full">
+          <div className="flex flex-col gap-1 rounded-view border border-glass-border bg-glass-strong px-4 py-2 backdrop-blur-xl">
+            {trackInfo}
             <ProgressSlider thick interactive={!radio} />
+            <div className="flex items-center justify-between gap-3">
+              {transport}
+              {clock}
+            </div>
           </div>
-        )}
-
-        <div
-          className={cn(
-            "rounded-view border border-glass-border bg-glass-strong backdrop-blur-xl",
-            compact ? "flex flex-col gap-1 px-4 py-2" : "flex items-center gap-3 px-4 py-3",
-          )}
-        >
-          {compact ? (
-            <>
-              {trackInfo}
-              <ProgressSlider thick interactive={!radio} />
-              <div className="flex items-center justify-between gap-3">
-                {transport}
-                {clock}
+        </div>
+      ) : (
+        <div className="flex items-stretch gap-3">
+          {/*
+            The scrubber rises out from behind the mini-player in normal flow
+            now (not absolutely positioned over it), so a flex sibling can
+            stretch to match its combined height automatically instead of the
+            volume meter needing a hand-measured pixel height.
+          */}
+          <div className="flex flex-col items-stretch gap-2">
+            <div
+              className="grid transition-[grid-template-rows] duration-300 ease-in-out"
+              style={{ gridTemplateRows: scrubberVisible ? "1fr" : "0fr" }}
+              inert={!scrubberVisible}
+            >
+              <div className="overflow-hidden">
+                <div className="rounded-view border border-glass-border bg-glass-strong px-4 py-1 backdrop-blur-xl">
+                  <ProgressSlider thick interactive={!radio} />
+                </div>
               </div>
-            </>
-          ) : (
-            <>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-view border border-glass-border bg-glass-strong px-4 py-3 backdrop-blur-xl">
               {transport}
               {trackInfo}
               {clock}
-            </>
-          )}
+            </div>
+          </div>
+
+          {/*
+            Shown together with the scrubber, at its combined height, so the
+            association with the mini-player reads immediately instead of
+            landing as an unrelated island elsewhere on screen.
+          */}
+          <div
+            className="flex flex-col items-center rounded-view border border-glass-border bg-glass-strong px-1 py-3 backdrop-blur-xl transition-opacity duration-300"
+            style={{ opacity: scrubberVisible ? 1 : 0 }}
+            inert={!scrubberVisible}
+          >
+            <VolumeSlider className="w-5" />
+          </div>
         </div>
-      </div>
+      )}
 
       <NextUpIndicator
         compact={compact}

@@ -1,5 +1,6 @@
 import { Pause, Play, SkipForward } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { VolumeSlider } from "@/components/VolumeSlider";
 import { IconButton } from "@/components/ui/IconButton";
 import { thumbnailUrl } from "@/constants/youtube";
 import { playNext, togglePlayPause } from "@/player/controller";
@@ -21,60 +22,69 @@ export function NowPlayingCard({
   const isPlaying = useIsPlaying();
 
   return (
-    <article
+    <div
       // select-none: a fast scrub drag routinely strays a few px off the
       // thin bar onto the title/author text or buttons around it. Pointer
       // capture keeps the drag itself working correctly, but the browser's
       // rendered cursor still follows normal hit-testing under the pointer,
       // so unselectable text is what keeps it a plain cursor instead of an
       // I-beam mid-drag.
-      className="flex w-full max-w-xl select-none gap-5 border border-surface-border bg-surface/80 p-5 backdrop-blur-md short:gap-3 short:p-3"
+      className="flex w-full max-w-xl select-none"
     >
-      <img
-        src={track.thumb}
-        alt=""
-        width={96}
-        height={96}
-        loading="lazy"
-        // oEmbed hands back a thumbnail URL that can 404 for age-restricted or
-        // recently-changed videos; the id-derived one always resolves.
-        onError={(event) => {
-          event.currentTarget.src = thumbnailUrl(track.videoId);
-        }}
-        // The artwork is the most expendable element vertically: it sets the
-        // card's height on its own and carries no information the title lacks.
-        className="size-24 shrink-0 object-cover short:hidden"
-      />
+      <article className="flex min-w-0 flex-1 gap-5 border border-surface-border bg-surface/80 p-5 backdrop-blur-md short:gap-3 short:p-3">
+        <img
+          src={track.thumb}
+          alt=""
+          width={96}
+          height={96}
+          loading="lazy"
+          // oEmbed hands back a thumbnail URL that can 404 for age-restricted or
+          // recently-changed videos; the id-derived one always resolves.
+          onError={(event) => {
+            event.currentTarget.src = thumbnailUrl(track.videoId);
+          }}
+          // The artwork is the most expendable element vertically: it sets the
+          // card's height on its own and carries no information the title lacks.
+          className="size-24 shrink-0 object-cover short:hidden"
+        />
 
-      <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
-        <div className="min-w-0">
-          <h2 className="truncate text-sm" title={track.title}>
-            {track.title}
-          </h2>
-          <p className="truncate text-xs text-muted-foreground">{track.author}</p>
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="truncate text-sm" title={track.title}>
+              {track.title}
+            </h2>
+            <p className="truncate text-xs text-muted-foreground">{track.author}</p>
+          </div>
+
+          <LinearProgress interactive={interactive} />
+
+          <div className="flex items-center justify-between gap-2">
+            {interactive ? (
+              <div className="flex items-center gap-2">
+                <IconButton
+                  onClick={togglePlayPause}
+                  aria-label={t(isPlaying ? "player.pause" : "player.play")}
+                >
+                  {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+                </IconButton>
+                <IconButton onClick={playNext} aria-label={t("player.next")}>
+                  <SkipForward size={14} />
+                </IconButton>
+              </div>
+            ) : (
+              <div />
+            )}
+            <LyricsDelayControl />
+          </div>
         </div>
+      </article>
 
-        <LinearProgress interactive={interactive} />
-
-        <div className="flex items-center justify-between gap-2">
-          {interactive ? (
-            <div className="flex items-center gap-2">
-              <IconButton
-                onClick={togglePlayPause}
-                aria-label={t(isPlaying ? "player.pause" : "player.play")}
-              >
-                {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-              </IconButton>
-              <IconButton onClick={playNext} aria-label={t("player.next")}>
-                <SkipForward size={14} />
-              </IconButton>
-            </div>
-          ) : (
-            <div />
-          )}
-          <LyricsDelayControl />
-        </div>
+      {/* Pegado sin margen to the card, its own border picking up right where
+          the card's leaves off: no gap between them, no shared border to
+          double up along the seam. */}
+      <div className="flex w-8 shrink-0 border-y border-r border-surface-border bg-surface/80 px-1 py-4 backdrop-blur-md short:py-3">
+        <VolumeSlider className="w-full" />
       </div>
-    </article>
+    </div>
   );
 }

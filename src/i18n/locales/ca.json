@@ -34,7 +34,10 @@
     "addedPlaylist_other": "Afegits {{count}} temes de la llista.",
     "playlistTruncated": "Afegits els primers {{count}} de {{total}} temes (límit de la llista).",
     "nextUp": "Tot seguit",
-    "nothingPlaying": "No sona res"
+    "nothingPlaying": "No sona res",
+    "volume": "Volum",
+    "mute": "Silencia",
+    "unmute": "Treu el silenci"
   },
   "lyrics": {
     "loading": "Cercant la lletra…",

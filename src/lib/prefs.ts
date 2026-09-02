@@ -20,6 +20,9 @@ export interface Prefs {
   uiVisibility: UiVisibility;
   /** HUD clock shows time remaining instead of elapsed. */
   showRemainingTime: boolean;
+  /** 0-100. Applied to the embed on boot and on every load, since the IFrame
+   * API resets to full volume on its own (see `forceAudible` in the engine). */
+  volume: number;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -31,6 +34,7 @@ export const DEFAULT_PREFS: Prefs = {
   activeBackgroundId: null,
   uiVisibility: DEFAULT_UI_VISIBILITY,
   showRemainingTime: false,
+  volume: 100,
 };
 
 /**
@@ -50,6 +54,11 @@ function readStoredPrefs(): Prefs {
     // Enum values are the part most likely to be renamed between releases, and
     // an unrecognised one leaves the UI in a state no control can reach.
     merged.uiVisibility = normalizeUiVisibility(merged.uiVisibility);
+    if (typeof merged.volume !== "number" || !Number.isFinite(merged.volume)) {
+      merged.volume = DEFAULT_PREFS.volume;
+    } else {
+      merged.volume = Math.min(Math.max(merged.volume, 0), 100);
+    }
     return merged;
   } catch {
     // Private-mode Safari throws on localStorage access, not just on write.

@@ -34,7 +34,10 @@
     "addedPlaylist_other": "Añadidos {{count}} temas de la lista.",
     "playlistTruncated": "Añadidos los primeros {{count}} de {{total}} temas (límite de la lista).",
     "nextUp": "A continuación",
-    "nothingPlaying": "Nada sonando"
+    "nothingPlaying": "Nada sonando",
+    "volume": "Volumen",
+    "mute": "Silenciar",
+    "unmute": "Quitar silencio"
   },
   "lyrics": {
     "loading": "Buscando letra…",

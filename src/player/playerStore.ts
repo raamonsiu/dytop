@@ -1,4 +1,5 @@
 import { createStore, useStoreSelector } from "@/lib/createStore";
+import { getPrefs } from "@/lib/prefs";
 import type { PlaybackStatus } from "./types";
 
 interface PlayerState {
@@ -9,6 +10,9 @@ interface PlayerState {
   errorKey: string | null;
   /** True once the embed responds to commands. */
   ready: boolean;
+  /** 0-100. Seeded from the persisted preference so every view agrees on it
+   * before the embed even loads. */
+  volume: number;
 }
 
 const INITIAL: PlayerState = {
@@ -16,6 +20,7 @@ const INITIAL: PlayerState = {
   duration: 0,
   errorKey: null,
   ready: false,
+  volume: getPrefs().volume,
 };
 
 /**
@@ -43,4 +48,8 @@ export function useIsPlaying(): boolean {
     playerStore,
     (state) => state.status === "playing" || state.status === "buffering",
   );
+}
+
+export function useVolume(): number {
+  return useStoreSelector(playerStore, (state) => state.volume);
 }

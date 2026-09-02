@@ -15,6 +15,12 @@ let player: YT.Player | null = null;
 let ready = false;
 let initPromise: Promise<void> | null = null;
 
+/** 0-100. Set by `setVolume` (and defaulted by the controller from the
+ * persisted preference on boot), read by `forceAudible` so re-asserting
+ * audibility after an autoplay-policy mute restores the user's chosen level
+ * instead of always jumping back to full volume. */
+let currentVolume = 100;
+
 /**
  * True once the user has interacted with the page at all (click, tap, key
  * press) since it loaded. Browsers stop rejecting unmuted, JS-triggered
@@ -85,14 +91,39 @@ export function getAdvanceHandler(): (() => void) | null {
 /**
  * The IFrame API sometimes reports UNSTARTED/CUED after a load with the embed
  * muted, a legacy of autoplay policies. The prototype re-asserted volume at
- * every such transition; so does this.
+ * every such transition; so does this, using the user's chosen level rather
+ * than always forcing full volume.
  */
 function forceAudible(): void {
   try {
-    player?.unMute();
-    player?.setVolume(100);
+    if (currentVolume > 0) {
+      player?.unMute();
+      player?.setVolume(currentVolume);
+    } else {
+      player?.mute();
+    }
   } catch {
     // Player not answering yet; the next state change will try again.
+  }
+}
+
+/**
+ * Sets the embed's volume, muting outright at 0 rather than merely setting
+ * volume to zero: a muted-but-technically-100 embed is what autoplay policies
+ * leave behind, and treating "silent" and "muted" as the same state here
+ * keeps `forceAudible` from fighting a slider dragged to the bottom.
+ */
+export function setVolume(value: number): void {
+  currentVolume = value;
+  try {
+    if (currentVolume > 0) {
+      player?.unMute();
+      player?.setVolume(currentVolume);
+    } else {
+      player?.mute();
+    }
+  } catch {
+    // Player not ready yet; forceAudible applies this once it is.
   }
 }
 

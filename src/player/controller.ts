@@ -1,4 +1,6 @@
 import { MAX_PLAYLIST_TRACKS } from "@/constants/player";
+import { clamp } from "@/lib/clamp";
+import { getPrefs, setPref } from "@/lib/prefs";
 import { extractYouTubeId } from "@/lib/youtube/extractYouTubeId";
 import { extractYouTubePlaylistId } from "@/lib/youtube/extractYouTubePlaylistId";
 import { fetchTrack } from "@/lib/youtube/oembed";
@@ -13,6 +15,7 @@ import {
   pause,
   play,
   seek,
+  setVolume as setEngineVolume,
 } from "./engine";
 import { playerStore, setPlayerState } from "./playerStore";
 import { resolvePlaylistVideoIds } from "./playlistResolver";
@@ -53,6 +56,12 @@ export function initPlayer(mount: HTMLElement): Promise<void> {
   // the "audio plays song A, radio UI shows song B" bug on a fresh session's
   // first direct visit to /radio.
   const generationAtInit = getLoadGeneration();
+
+  // Seeds the engine's volume before the embed even exists: `setVolume` is a
+  // no-op on a null player, but it records the level so the ready/UNSTARTED
+  // handlers apply it the moment the embed answers, instead of briefly
+  // blasting the default full volume first.
+  setEngineVolume(getPrefs().volume);
 
   // Lyrics follow the queue rather than being fetched at each call site, so
   // every path that changes the track, advance, jump, restore, error skip,
@@ -194,4 +203,14 @@ export function seekTo(seconds: number): void {
   // the pre-seek position (the IFrame API's seekTo is asynchronous), which is
   // what caused the bar to flicker back on a quick click. See resyncClock.
   resyncClock(seconds);
+}
+
+/** Sets playback volume (0-100), applies it to the embed immediately, and
+ * persists it so it survives a reload. Shared by every view: there is one
+ * embed, so D1's and legacy's sliders (and radio) all move the same needle. */
+export function setVolume(value: number): void {
+  const clamped = clamp(Math.round(value), 0, 100);
+  setEngineVolume(clamped);
+  setPlayerState({ volume: clamped });
+  setPref("volume", clamped);
 }

@@ -34,7 +34,10 @@
     "addedPlaylist_other": "Added {{count}} tracks from the playlist.",
     "playlistTruncated": "Added the first {{count}} of {{total}} tracks (playlist limit).",
     "nextUp": "Next up",
-    "nothingPlaying": "Nothing playing"
+    "nothingPlaying": "Nothing playing",
+    "volume": "Volume",
+    "mute": "Mute",
+    "unmute": "Unmute"
   },
   "lyrics": {
     "loading": "Looking for lyrics…",
