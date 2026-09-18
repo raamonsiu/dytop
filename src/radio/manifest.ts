@@ -18,14 +18,30 @@ export interface RadioManifestEntry {
 
 /**
  * A single global evergreen video used to fill any slot whose scheduled track
- * is `blocked`. Because it is one committed constant, every client substitutes
- * the same slot with the same content, determinism across devices is preserved.
+ * is `blocked`, or that a client finds the embed refusing at runtime (see
+ * `unavailableVideos` in the radio controller). Because it is one committed
+ * constant, every client substitutes the same slot with the same content, so
+ * determinism across devices is preserved.
+ *
+ * Three properties this entry must have, all of them load-bearing:
+ *
+ * - **A fixed duration.** A live stream has none to schedule against, never
+ *   fires ENDED, and puts every client at a different point in its window for
+ *   the same `startSeconds` — which would make the one slot that exists to
+ *   keep clients in sync the only one that cannot. This pointed at a 24/7
+ *   stream once; the loop kept working only because the tick eventually moved
+ *   it on.
+ * - **Embeddable.** Every other refusal falls back to it, so if this is
+ *   refused too there is nothing left to substitute.
+ * - **Absent from MANIFEST.** A slot keys its `Track` off the videoId, so a
+ *   fallback that is also scheduled in its own right would appear twice in one
+ *   loop under a single id.
  */
 export const RADIO_FALLBACK: RadioManifestEntry = {
-  videoId: "jfKfPfyJRdk",
-  durationSec: 212,
-  title: "Lofi Study Beats",
-  author: "Lofi Girl",
+  videoId: "kJQP7kiw5Fk",
+  durationSec: 282,
+  title: "Luis Fonsi - Despacito ft. Daddy Yankee",
+  author: "LuisFonsiVEVO",
 };
 
 /**
