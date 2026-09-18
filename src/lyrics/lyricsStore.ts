@@ -18,10 +18,13 @@ export const lyricsStore = createStore<LyricsState>({ status: "idle" });
 let controller: AbortController | null = null;
 
 /**
- * Id of the track lyrics were last loaded for, so a manual delay/offset
- * nudge can be reset exactly once per genuine track change. Callers such as
- * the radio's periodic re-sync call `loadLyricsFor` again for the *same*
- * track (id unchanged), which must not clobber a delay the user just set.
+ * Id of the track lyrics were last loaded for: what tells a genuine track
+ * change from a caller re-asking for the one already showing.
+ *
+ * Callers such as the radio's heal re-invoke `loadLyricsFor` for the *same*
+ * track (id unchanged) many times per song. That must neither refetch the
+ * document nor clobber a delay the user just set, since the delay is a manual
+ * correction for this upload rather than a listening preference.
  */
 let lastTrackId: string | null = null;
 
@@ -32,12 +35,24 @@ let lastTrackId: string | null = null;
  * a slow earlier response could land after a faster later one and leave the
  * wrong lyrics on screen. The result is also checked against the request that
  * is still current, since an abort isn't guaranteed to win the race.
+ *
+ * Re-asking for the track already on screen is a no-op. Radio calls this from
+ * every heal, and a heal is not only a track boundary: a tab refocus or the
+ * midnight re-sync both fire one mid-song. Aborting the settled lookup to run
+ * it again dropped the lyrics back to "loading" and refetched them for nothing,
+ * which is why simply returning to the tab wiped the words off the screen.
+ *
+ * A previous *failure* is the one state worth repeating: a heal is exactly the
+ * moment a transient outage deserves another attempt.
  */
 export function loadLyricsFor(track: Track | null): void {
+  const trackId = track?.id ?? null;
+  const sameTrack = trackId === lastTrackId;
+  if (sameTrack && lyricsStore.get().status !== "error") return;
+
   controller?.abort();
 
-  const trackId = track?.id ?? null;
-  if (trackId !== lastTrackId) {
+  if (!sameTrack) {
     // The delay is a per-track manual correction (e.g. a laggy upload's
     // intro), not a listening preference, so it should not carry over to the
     // next song. Keyed on id rather than firing on every call, since callers
