@@ -7,7 +7,7 @@
  * the impure controller calls these and applies the engine side effects.
  */
 import { thumbnailUrl } from "@/constants/youtube";
-import { parseTitleGuess } from "@/lib/youtube/parseTitleGuess";
+import { artistFromChannel, parseTitleGuess } from "@/lib/youtube/parseTitleGuess";
 import type { Track } from "@/player/types";
 import {
   DEFAULT_RADIO_STATION,
@@ -133,7 +133,7 @@ export function entryToTrack(entry: RadioManifestEntry): Track {
     title: entry.title,
     author: entry.author,
     thumb: thumbnailUrl(entry.videoId),
-    artistGuess: artist || entry.author,
+    artistGuess: artist || artistFromChannel(entry.author),
     titleGuess: title || entry.title,
   };
 }

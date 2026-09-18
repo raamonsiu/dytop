@@ -20,7 +20,10 @@ export async function fetchLyrics(
   title: string,
   signal?: AbortSignal,
 ): Promise<LyricsResult> {
-  if (!title.trim()) return { status: "not-found" };
+  // Both halves are path segments here, not query params: an empty artist
+  // collapses the URL into a double slash that can never match anything, so
+  // there is nothing to ask rather than a request to waste.
+  if (!artist.trim() || !title.trim()) return { status: "not-found" };
 
   const path = `${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
 

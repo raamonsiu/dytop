@@ -195,6 +195,20 @@ describe("entryToTrack", () => {
     expect(track.thumb).toContain("i.ytimg.com/vi/");
   });
 
+  it("falls back to the channel when the title carries no artist", () => {
+    const entry = {
+      videoId: "abc",
+      durationSec: 200,
+      title: "Boig Per Tu",
+      author: "Sau - Topic",
+    };
+    const track = entryToTrack(entry);
+    // Without this the lyrics lookup asks for an empty artist, which lyrics.ovh
+    // cannot express in a path at all.
+    expect(track.artistGuess).toBe("Sau");
+    expect(track.titleGuess).toBe("Boig Per Tu");
+  });
+
   it("produces artist/title guesses for the lyrics lookup", () => {
     const track = entryToTrack(MANIFEST[0]!);
     // "Never Gonna Give You Up" has no artist separator, so the guess is empty

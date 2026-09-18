@@ -1,6 +1,6 @@
 import { thumbnailUrl, watchUrl, YT_OEMBED_ENDPOINT } from "@/constants/youtube";
 import type { Track } from "@/player/types";
-import { parseTitleGuess } from "./parseTitleGuess";
+import { artistFromChannel, parseTitleGuess } from "./parseTitleGuess";
 
 interface OEmbedResponse {
   title?: unknown;
@@ -50,13 +50,17 @@ export async function fetchTrack(
     if (!title) return fallback;
 
     const guess = parseTitleGuess(title);
+    const author = asString(data.author_name) ?? "";
     return {
       id: entryId,
       videoId,
       title,
-      author: asString(data.author_name) ?? "",
+      author,
       thumb: asString(data.thumbnail_url) ?? thumbnailUrl(videoId),
-      artistGuess: guess.artist,
+      // Falls back to the channel exactly as the radio path does: a title with
+      // no separator to split ("Boig Per Tu") would otherwise ask both
+      // providers for an empty artist, which neither can answer.
+      artistGuess: guess.artist || artistFromChannel(author),
       titleGuess: guess.title,
     };
   } catch {

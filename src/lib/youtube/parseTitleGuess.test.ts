@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseTitleGuess } from "./parseTitleGuess";
+import { artistFromChannel, parseTitleGuess } from "./parseTitleGuess";
 
 describe("parseTitleGuess", () => {
   it("splits on a spaced hyphen", () => {
@@ -57,5 +57,41 @@ describe("parseTitleGuess", () => {
 
   it("handles an empty title", () => {
     expect(parseTitleGuess("")).toEqual({ artist: "", title: "" });
+  });
+
+  it.each([
+    ["album", "Mora - VOLANDO | PRIMER DIA DE CLASES", "VOLANDO"],
+    ["playlist", "Sean Paul - She Doesn't Mind | Lyrics", "She Doesn't Mind"],
+  ])("drops the %s trailer after the bar", (_label, raw, title) => {
+    expect(parseTitleGuess(raw)).toEqual({ artist: raw.split(" - ")[0], title });
+  });
+
+  it("keeps a bar when there is no separator, since it may be the separator", () => {
+    // Truncating here would leave title === artist and ask for the wrong song.
+    expect(parseTitleGuess("Don Omar | Zumba")).toEqual({
+      artist: "",
+      title: "Don Omar | Zumba",
+    });
+  });
+
+  it("collapses the gap that stripping noise leaves behind", () => {
+    expect(parseTitleGuess("Artist - Song (Official Video) Live")).toEqual({
+      artist: "Artist",
+      title: "Song Live",
+    });
+  });
+});
+
+describe("artistFromChannel", () => {
+  it("drops YouTube's auto-generated Topic suffix", () => {
+    expect(artistFromChannel("Zion & Lennox - Topic")).toBe("Zion & Lennox");
+  });
+
+  it("leaves an ordinary channel name alone", () => {
+    expect(artistFromChannel("Els Catarres")).toBe("Els Catarres");
+  });
+
+  it("only strips the suffix, not a hyphen inside the name", () => {
+    expect(artistFromChannel("Topic - Topic Records")).toBe("Topic - Topic Records");
   });
 });
