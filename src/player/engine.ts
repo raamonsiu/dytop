@@ -54,6 +54,24 @@ let advanceHandler: (() => void) | null = null;
 let pending: { videoId: string; autoplay: boolean; startSeconds: number } | null = null;
 
 /**
+ * True when the video the embed currently holds was refused for its own sake
+ * (gone, region-locked, embedding disabled) rather than by a fault that breaks
+ * every video equally. Cleared by the next `load()`.
+ *
+ * The queue only needs to move on, which the skip timer already does. Radio
+ * picks its track from wall-clock time instead, so the deterministic schedule
+ * keeps naming the refused video for the rest of its slot: it reads this to
+ * substitute the station fallback rather than re-assert a video it now knows
+ * the embed will reject again.
+ */
+let videoFailed = false;
+
+/** Whether the loaded video was refused for its own sake. See `videoFailed`. */
+export function currentVideoFailed(): boolean {
+  return videoFailed;
+}
+
+/**
  * Bumped on every `load()` call. Lets a caller that kicked off async work
  * before its own `load()` (e.g. the queue restore in `initPlayer`, which
  * awaits `hydrateQueue`/`initEngine` first) notice that something else
@@ -157,6 +175,7 @@ function handleError(event: YT.OnErrorEvent): void {
   // fault breaks every video identically, so skipping would silently chew
   // through the whole queue instead of showing the problem once.
   if (SKIPPABLE_YT_ERROR_CODES.has(code)) {
+    videoFailed = true;
     clearSkipTimer();
     skipTimer = setTimeout(() => advanceHandler?.(), ERROR_SKIP_DELAY_MS);
   }
@@ -226,6 +245,7 @@ export function initEngine(mount: HTMLElement): Promise<void> {
  */
 export function load(videoId: string, autoplay: boolean, startSeconds = 0): void {
   loadGeneration++;
+  videoFailed = false;
   clearSkipTimer();
   setPlayerState({ errorKey: null, duration: 0, status: "loading" });
 

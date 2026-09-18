@@ -96,6 +96,64 @@ describe("radioSlotAt", () => {
   });
 });
 
+describe("runtime-unavailable substitution", () => {
+  it("swaps a refused video for the station fallback on the same slot", () => {
+    const scheduled = radioSlotAt(DAY_EPOCH, null);
+    const healed = radioSlotAt(DAY_EPOCH, null, "default", new Set([scheduled.entry.videoId]));
+    expect(healed.entry.videoId).toBe(RADIO_FALLBACK.videoId);
+    // Same instant, so the loop keeps its wall-clock shape: a client that never
+    // hit the failure is still on the same second of the same slot.
+    expect(healed.offsetInTrack).toBe(scheduled.offsetInTrack);
+    expect(healed.day).toBe(scheduled.day);
+  });
+
+  it("reports the substitution as a change, so the controller loads it", () => {
+    const scheduled = radioSlotAt(DAY_EPOCH, null);
+    const healed = radioSlotAt(
+      DAY_EPOCH,
+      scheduled.entry.videoId,
+      "default",
+      new Set([scheduled.entry.videoId]),
+    );
+    expect(healed.changed).toBe(true);
+    expect(healed.unavailable).toBe(false);
+  });
+
+  it("leaves an unrelated refusal alone", () => {
+    const slot = radioSlotAt(DAY_EPOCH, null, "default", new Set(["not-in-the-loop"]));
+    expect(slot.entry.videoId).toBe(radioSlotAt(DAY_EPOCH, null).entry.videoId);
+    expect(slot.unavailable).toBe(false);
+  });
+
+  it("flags unavailable when the fallback itself was refused, with nothing left to swap", () => {
+    const scheduled = radioSlotAt(DAY_EPOCH, null);
+    const slot = radioSlotAt(
+      DAY_EPOCH,
+      RADIO_FALLBACK.videoId,
+      "default",
+      new Set([scheduled.entry.videoId, RADIO_FALLBACK.videoId]),
+    );
+    expect(slot.entry.videoId).toBe(RADIO_FALLBACK.videoId);
+    // Already loaded and still refused: the controller must stop re-asserting
+    // it rather than spin on the error until the slot moves.
+    expect(slot.changed).toBe(false);
+    expect(slot.unavailable).toBe(true);
+  });
+
+  it("substitutes the up-next hint too, so it names what will actually play", () => {
+    const next = upNextEntry(DAY_EPOCH);
+    const healed = upNextEntry(DAY_EPOCH, "default", new Set([next.videoId]));
+    expect(healed.videoId).toBe(RADIO_FALLBACK.videoId);
+  });
+
+  it("defaults to substituting nothing when no refusals are passed", () => {
+    expect(radioSlotAt(DAY_EPOCH, null, "default", new Set())).toEqual(
+      radioSlotAt(DAY_EPOCH, null),
+    );
+    expect(upNextEntry(DAY_EPOCH, "default", new Set())).toBe(upNextEntry(DAY_EPOCH));
+  });
+});
+
 describe("upNextEntry", () => {
   it("returns the entry scheduled after the current one", () => {
     const s = dailySchedule("2026-08-28");

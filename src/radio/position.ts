@@ -11,6 +11,7 @@ import { parseTitleGuess } from "@/lib/youtube/parseTitleGuess";
 import type { Track } from "@/player/types";
 import {
   DEFAULT_RADIO_STATION,
+  RADIO_STATIONS,
   type RadioManifestEntry,
   type RadioStationId,
 } from "./manifest";
@@ -37,6 +38,32 @@ export interface RadioSlot {  /** The effective entry (blocked slots already sub
   day: string;
   /** True when the slot no longer matches the currently loaded video. */
   changed: boolean;
+  /** True when `entry` is itself known-refused, i.e. the station fallback has
+   * failed too and there is nothing left to substitute. The controller stops
+   * re-asserting playback rather than spinning on it until the slot moves. */
+  unavailable: boolean;
+}
+
+/** No video known-refused: the default for callers that don't track them. */
+const NONE: ReadonlySet<string> = new Set();
+
+/**
+ * Swaps an entry the embed refused at runtime for the station fallback.
+ *
+ * The maintainer-confirmed `blocked` flag is substituted at schedule build
+ * (see `dailySchedule`), but a video can start refusing embeds long before
+ * anyone gets round to marking it. Those failures are discovered per-session
+ * by the controller and substituted here instead, on the same slot and the
+ * same offset: the loop keeps its wall-clock shape, so a client that never hit
+ * the failure stays in sync second for second.
+ */
+function substitute(
+  entry: RadioManifestEntry,
+  stationId: RadioStationId,
+  unavailable: ReadonlySet<string>,
+): RadioManifestEntry {
+  if (!unavailable.has(entry.videoId)) return entry;
+  return RADIO_STATIONS[stationId].fallback;
 }
 
 /**
@@ -52,11 +79,21 @@ export function radioSlotAt(
   epochSec: number,
   loadedVideoId: string | null,
   stationId: RadioStationId = DEFAULT_RADIO_STATION,
+  unavailable: ReadonlySet<string> = NONE,
 ): RadioSlot {
   const day = utcDayString(epochSec);
   const schedule = dailySchedule(day, stationId);
   const { entry, offsetInTrack } = positionAt(schedule, epochSec);
-  return { entry, offsetInTrack, day, changed: entry.videoId !== loadedVideoId };
+  const effective = substitute(entry, stationId, unavailable);
+  return {
+    entry: effective,
+    offsetInTrack,
+    day,
+    // Compared against the effective entry, so substituting a refused video is
+    // itself a change the controller must load.
+    changed: effective.videoId !== loadedVideoId,
+    unavailable: unavailable.has(effective.videoId),
+  };
 }
 
 /**
@@ -72,12 +109,15 @@ export function radioSlotAt(
 export function upNextEntry(
   epochSec: number,
   stationId: RadioStationId = DEFAULT_RADIO_STATION,
+  unavailable: ReadonlySet<string> = NONE,
 ): RadioManifestEntry {
   const day = utcDayString(epochSec);
   const schedule = dailySchedule(day, stationId);
   const { index } = positionAt(schedule, epochSec);
   const next = schedule.order[(index + 1) % schedule.order.length];
-  return next ?? schedule.order[0]!;
+  // Substituted like the current slot, so the hint names what will actually
+  // play rather than the video this client already knows is refused.
+  return substitute(next ?? schedule.order[0]!, stationId, unavailable);
 }
 
 /**

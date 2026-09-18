@@ -14,6 +14,7 @@
 import { createStore, useStoreSelector } from "@/lib/createStore";
 import { loadLyricsFor } from "@/lyrics/lyricsStore";
 import {
+  currentVideoFailed,
   getAdvanceHandler,
   getCurrentTime,
   hasUserInteracted,
@@ -90,6 +91,24 @@ function ensurePlaying(): void {
 let unlocked = false;
 
 /**
+ * Videos this browser has seen the embed refuse, for the rest of the page's
+ * life.
+ *
+ * The manifest's `blocked` flag is hand-maintained, and a video routinely
+ * starts refusing embeds (taken down, region-locked, embedding disabled) long
+ * before anyone marks it. Without this the deterministic schedule keeps naming
+ * the refused video for its whole slot: every heal re-asserts it, the embed
+ * errors again, and radio spends up to a full track looping on the failure.
+ * Remembering it lets `radioSlotAt` substitute the station fallback on the
+ * spot, and the next slot rejoins the shared schedule untouched.
+ *
+ * Deliberately not persisted, and not cleared by `stopRadio`: it describes
+ * what this browser can play, which outlives one radio session but nothing
+ * more — a reload gives every video another chance.
+ */
+const unavailableVideos = new Set<string>();
+
+/**
  * Recomputes the deterministic slot and drives the embed to it.
  *
  * This is the single heal body: used by start, the advance-handler (track
@@ -108,24 +127,29 @@ let unlocked = false;
  * While `unlocked` is false, the slot is cued (not played) instead, exactly
  * like a restored personal-queue track: audio starts only once
  * `unlockRadioPlayback` runs inside a real click.
+ *
+ * `slot.unavailable` means even the substituted entry is known-refused, so
+ * the station fallback itself has failed and there is nothing playable for
+ * this slot. Re-seeking and resuming would only re-trigger the error that got
+ * us here, so the embed is left alone and the tick picks the next slot up.
  */
 function refreshSlot(): void {
-  const slot = radioSlotAt(epochNow(), loadedVideoId, stationId);
+  const slot = radioSlotAt(epochNow(), loadedVideoId, stationId, unavailableVideos);
   if (slot.changed) {
     loadedVideoId = slot.entry.videoId;
     load(slot.entry.videoId, unlocked, slot.offsetInTrack);
     if (!unlocked) setPlayerState({ status: "paused" });
-  } else {
+  } else if (!slot.unavailable) {
     seek(slot.offsetInTrack);
   }
-  if (unlocked) ensurePlaying();
+  if (unlocked && !slot.unavailable) ensurePlaying();
   loadLyricsFor(entryToTrack(slot.entry));
   radioStore.set({
     active: true,
     stationId,
     entry: slot.entry,
     offsetInTrack: slot.offsetInTrack,
-    next: upNextEntry(epochNow(), stationId),
+    next: upNextEntry(epochNow(), stationId, unavailableVideos),
     loadedVideoId,
     day: slot.day,
     needsGesture: !unlocked,
@@ -161,12 +185,19 @@ let lastHealEpoch = 0;
  * harmless re-seek followed by a quiet wait, at a granularity nothing in this
  * module (or the UI) can perceive anyway — the tick loop itself only runs
  * once a second.
+ *
+ * An advance the embed requested because it *refused* the video, rather than
+ * because the track ended, is the one case where re-resolving the same slot is
+ * not enough: the schedule still names the refused video, so it would be
+ * re-asserted and fail again for the rest of the slot. Recording it first is
+ * what turns that loop into a single substitution (see `unavailableVideos`).
  */
 function heal(): void {
   if (!active) return;
   const now = epochNow();
   if (now === lastHealEpoch) return;
   lastHealEpoch = now;
+  if (loadedVideoId && currentVideoFailed()) unavailableVideos.add(loadedVideoId);
   refreshSlot();
 }
 
@@ -196,7 +227,7 @@ function scheduleTick(): void {
   if (tickId) return;
   tickId = setInterval(() => {
     if (!active) return;
-    const slot = radioSlotAt(epochNow(), loadedVideoId, stationId);
+    const slot = radioSlotAt(epochNow(), loadedVideoId, stationId, unavailableVideos);
     const state = radioStore.get();
     // Only act when the deterministic position moved (new track or new day) —
     // this catches an ENDED event that never fired and the 00:00 UTC reseed.
