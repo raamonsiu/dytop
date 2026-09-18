@@ -41,13 +41,21 @@ export function usePlayerError(): string | null {
   return useStoreSelector(playerStore, (state) => state.errorKey);
 }
 
-/** Buffering counts as playing for the transport icon: playback resumes on its
- * own, so flipping to a play triangle mid-stall reads as a stop. */
+/** Buffering counts as playing: playback resumes on its own, so flipping to a
+ * play triangle mid-stall reads as a stop. */
+function playing(state: PlayerState): boolean {
+  return state.status === "playing" || state.status === "buffering";
+}
+
+/** The same answer as `useIsPlaying`, read outside React. Used by the radio
+ * controller, which has to decide whether audio was actually running before it
+ * took the embed over, long before any component renders. */
+export function isPlaying(): boolean {
+  return playing(playerStore.get());
+}
+
 export function useIsPlaying(): boolean {
-  return useStoreSelector(
-    playerStore,
-    (state) => state.status === "playing" || state.status === "buffering",
-  );
+  return useStoreSelector(playerStore, playing);
 }
 
 export function useVolume(): number {

@@ -24,7 +24,7 @@ import {
   play,
   seek,
 } from "@/player/engine";
-import { playerStore, setPlayerState } from "@/player/playerStore";
+import { isPlaying, setPlayerState } from "@/player/playerStore";
 import { queueStore } from "@/player/queueStore";
 import { DEFAULT_RADIO_STATION, type RadioManifestEntry, type RadioStationId } from "./manifest";
 import { entryToTrack, radioSlotAt, upNextEntry } from "./position";
@@ -72,8 +72,7 @@ function epochNow(): number {
 }
 
 function ensurePlaying(): void {
-  const { status } = playerStore.get();
-  if (status !== "playing" && status !== "buffering") play();
+  if (!isPlaying()) play();
 }
 
 /**
@@ -204,7 +203,13 @@ function heal(): void {
 let active = false;
 let stationId: RadioStationId = DEFAULT_RADIO_STATION;
 let savedAdvanceHandler: (() => void) | null = null;
-let savedQueuePosition: { videoId: string; positionSec: number } | null = null;
+/** Where the personal queue stood when radio took the embed over, restored by
+ * `runStop`. `wasPlaying` is the part that decides between resuming it and
+ * merely cueing it back: a queue that was only ever restored-and-cued must not
+ * come back playing just because the user looked at the radio tab. */
+let savedQueuePosition:
+  | { videoId: string; positionSec: number; wasPlaying: boolean }
+  | null = null;
 let loadedVideoId: string | null = null;
 let tickId: ReturnType<typeof setInterval> | null = null;
 let visibilityHandler: (() => void) | null = null;
@@ -270,7 +275,7 @@ export function startRadio(id: RadioStationId = DEFAULT_RADIO_STATION): void {
 
   const now = queueStore.get().nowPlaying;
   savedQueuePosition = now
-    ? { videoId: now.videoId, positionSec: getCurrentTime() }
+    ? { videoId: now.videoId, positionSec: getCurrentTime(), wasPlaying: isPlaying() }
     : null;
   savedAdvanceHandler = getAdvanceHandler() ?? (() => {});
   onAdvanceRequested(heal);
@@ -283,11 +288,14 @@ export function startRadio(id: RadioStationId = DEFAULT_RADIO_STATION): void {
 }
 
 /**
- * Exits radio mode and restores the personal queue's track and position.
+ * Exits radio mode and restores the personal queue's track, position and
+ * playing/paused state.
  *
- * Restores the queue's advance handler, then re-asserts the captured track
- * (load + seek). If nothing was playing before radio, the embed is paused so
- * it does not keep autoplaying unattended.
+ * Restores the queue's advance handler, then re-asserts the captured track.
+ * A queue that was merely cued when radio started (the usual case on a fresh
+ * load: `initPlayer` restores the session without playing it) comes back cued,
+ * not playing — leaving radio is not a request to start the personal queue.
+ * With no captured track at all the embed is simply paused.
  */
 export function stopRadio(): void {
   if (!active) return;
@@ -321,7 +329,12 @@ function runStop(): void {
   savedAdvanceHandler = null;
 
   if (savedQueuePosition) {
-    load(savedQueuePosition.videoId, true, savedQueuePosition.positionSec);
+    const { videoId, positionSec, wasPlaying } = savedQueuePosition;
+    load(videoId, wasPlaying, positionSec);
+    // CUED carries no status of its own, so a cue leaves the store on
+    // "loading" forever. Land on paused instead, exactly as the queue restore
+    // in `initPlayer` and the cued radio slot in `refreshSlot` both do.
+    if (!wasPlaying) setPlayerState({ status: "paused" });
     loadLyricsFor(queueStore.get().nowPlaying);
   } else {
     pause();
