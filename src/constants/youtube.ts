@@ -42,8 +42,15 @@ export const YT_ERROR_KEYS: Record<number, string> = {
  * 153 (origin rejected) and 5 (player fault) are deliberately excluded: they
  * fail identically for every video, so auto-skipping would silently burn
  * through the whole queue. The prototype made the same distinction.
+ *
+ * 2 belongs with the per-video ones: the API raises it for an invalid
+ * parameter, and the only parameter that varies here is the video id — the
+ * player vars are a frozen constant, so a malformed one would break the very
+ * first load rather than a single entry. An id that survived
+ * `extractYouTubeId` but that YouTube rejects used to stall the queue on that
+ * entry for good, with no control able to move past it.
  */
-export const SKIPPABLE_YT_ERROR_CODES = new Set([100, 101, 150]);
+export const SKIPPABLE_YT_ERROR_CODES = new Set([2, 100, 101, 150]);
 
 /** How long the error stays on screen before the queue advances. */
 export const ERROR_SKIP_DELAY_MS = 1_500;
