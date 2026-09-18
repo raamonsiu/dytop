@@ -38,6 +38,24 @@ describe("radioSlotAt", () => {
     expect(slot.changed).toBe(true);
   });
 
+  it("reports the slot's position in the day's order", () => {
+    const schedule = dailySchedule("2026-08-28");
+    const slot = radioSlotAt(DAY_EPOCH, null);
+    // The index, not the videoId, is what tells a boundary from a repeat: two
+    // substituted slots in a row carry the identical entry.
+    expect(schedule.order[slot.index]).toBeDefined();
+    expect(slot.index).toBe(positionAt(schedule, DAY_EPOCH).index);
+  });
+
+  it("moves the index across a track boundary even when the entry repeats", () => {
+    const schedule = dailySchedule("2026-08-28");
+    const first = radioSlotAt(DAY_EPOCH, null);
+    const boundary = DAY_EPOCH + (schedule.prefixSums[first.index]! - (DAY_EPOCH % schedule.totalSec));
+    const next = radioSlotAt(boundary, null);
+    expect(next.index).not.toBe(first.index);
+    expect(next.offsetInTrack).toBe(0);
+  });
+
   it("reports changed=false when the loaded video already matches the slot", () => {
     const slot = radioSlotAt(DAY_EPOCH, null);
     const same = radioSlotAt(DAY_EPOCH, slot.entry.videoId);

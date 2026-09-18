@@ -38,6 +38,11 @@ export interface RadioSlot {  /** The effective entry (blocked slots already sub
   day: string;
   /** True when the slot no longer matches the currently loaded video. */
   changed: boolean;
+  /** Position within the day's play order. The controller watches this rather
+   * than the videoId to notice a boundary: two blocked slots in a row
+   * substitute the identical entry, so the videoId would not move across it
+   * even though the offset restarts from zero. */
+  index: number;
   /** True when `entry` is itself known-refused, i.e. the station fallback has
    * failed too and there is nothing left to substitute. The controller stops
    * re-asserting playback rather than spinning on it until the slot moves. */
@@ -83,12 +88,13 @@ export function radioSlotAt(
 ): RadioSlot {
   const day = utcDayString(epochSec);
   const schedule = dailySchedule(day, stationId);
-  const { entry, offsetInTrack } = positionAt(schedule, epochSec);
+  const { entry, offsetInTrack, index } = positionAt(schedule, epochSec);
   const effective = substitute(entry, stationId, unavailable);
   return {
     entry: effective,
     offsetInTrack,
     day,
+    index,
     // Compared against the effective entry, so substituting a refused video is
     // itself a change the controller must load.
     changed: effective.videoId !== loadedVideoId,

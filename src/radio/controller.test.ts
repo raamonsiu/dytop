@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // The controller is the impure radio module: it only turns slot decisions into
 // calls on the one shared embed. Mocking that embed (and the lyrics fetch it
@@ -20,7 +20,7 @@ import { getCurrentTime, load, pause } from "@/player/engine";
 import { playerStore, setPlayerState } from "@/player/playerStore";
 import { queueStore } from "@/player/queueStore";
 import type { Track } from "@/player/types";
-import { startRadio, stopRadio } from "./controller";
+import { radioStore, startRadio, stopRadio } from "./controller";
 
 const TRACK: Track = {
   id: "entry-1",
@@ -39,11 +39,45 @@ async function stopAndSettle(): Promise<void> {
   await Promise.resolve();
 }
 
+afterEach(async () => {
+  // Each test leaves the module's session state behind (and its 1s tick), so
+  // the next one would start mid-session.
+  stopRadio();
+  await Promise.resolve();
+});
+
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(getCurrentTime).mockReturnValue(0);
   queueStore.set({ history: [], nowPlaying: null, upcoming: [] });
   setPlayerState({ status: "idle", duration: 0, errorKey: null });
+});
+
+describe("session lifecycle", () => {
+  it("leaves the embed alone when the same station is started again", () => {
+    // What a legacy/minimal view swap does: unmount one radio view and mount
+    // the other for the same /radio session, in the same commit.
+    startRadio();
+    vi.mocked(load).mockClear();
+
+    stopRadio();
+    startRadio();
+
+    expect(load).not.toHaveBeenCalled();
+    expect(radioStore.get().active).toBe(true);
+  });
+
+  it("does not tear the session down when the paired start cancels the stop", async () => {
+    startRadio();
+    stopRadio();
+    startRadio();
+    await Promise.resolve();
+
+    // The deferred teardown must have been cancelled outright, not merely
+    // delayed past the start that overtook it.
+    expect(pause).not.toHaveBeenCalled();
+    expect(radioStore.get().active).toBe(true);
+  });
 });
 
 describe("personal-queue handoff", () => {

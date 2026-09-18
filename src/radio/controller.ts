@@ -133,7 +133,12 @@ const unavailableVideos = new Set<string>();
  * us here, so the embed is left alone and the tick picks the next slot up.
  */
 function refreshSlot(): void {
-  const slot = radioSlotAt(epochNow(), loadedVideoId, stationId, unavailableVideos);
+  // One reading of the clock for the slot and the hint alike: taken twice, a
+  // tick that lands on a boundary second resolves them from different instants
+  // and the hint names the track that just started playing.
+  const now = epochNow();
+  const slot = radioSlotAt(now, loadedVideoId, stationId, unavailableVideos);
+  loadedIndex = slot.index;
   if (slot.changed) {
     loadedVideoId = slot.entry.videoId;
     load(slot.entry.videoId, unlocked, slot.offsetInTrack);
@@ -148,7 +153,7 @@ function refreshSlot(): void {
     stationId,
     entry: slot.entry,
     offsetInTrack: slot.offsetInTrack,
-    next: upNextEntry(epochNow(), stationId, unavailableVideos),
+    next: upNextEntry(now, stationId, unavailableVideos),
     loadedVideoId,
     day: slot.day,
     needsGesture: !unlocked,
@@ -211,6 +216,10 @@ let savedQueuePosition:
   | { videoId: string; positionSec: number; wasPlaying: boolean }
   | null = null;
 let loadedVideoId: string | null = null;
+/** Which slot of the day's order the embed is on. Paired with the day, this is
+ * what tells the tick that the deterministic position moved; see
+ * `RadioSlot.index` for why the videoId alone cannot. */
+let loadedIndex: number | null = null;
 let tickId: ReturnType<typeof setInterval> | null = null;
 let visibilityHandler: (() => void) | null = null;
 
@@ -234,9 +243,9 @@ function scheduleTick(): void {
     if (!active) return;
     const slot = radioSlotAt(epochNow(), loadedVideoId, stationId, unavailableVideos);
     const state = radioStore.get();
-    // Only act when the deterministic position moved (new track or new day) —
+    // Only act when the deterministic position moved (new slot or new day) —
     // this catches an ENDED event that never fired and the 00:00 UTC reseed.
-    if (slot.entry.videoId !== loadedVideoId || slot.day !== state.day) {
+    if (slot.index !== loadedIndex || slot.day !== state.day) {
       refreshSlot();
     }
   }, RADIO_TICK_MS);
@@ -262,10 +271,15 @@ export function startRadio(id: RadioStationId = DEFAULT_RADIO_STATION): void {
   // instead of tearing down and immediately re-loading the same slot.
   if (pendingStop) {
     pendingStop = null;
+    retune(id);
     return;
   }
 
-  if (active) return;
+  if (active) {
+    retune(id);
+    return;
+  }
+
   active = true;
   stationId = id;
   // Already interacted with the app before landing on /radio (clicked a nav
@@ -284,6 +298,28 @@ export function startRadio(id: RadioStationId = DEFAULT_RADIO_STATION): void {
   document.addEventListener("visibilitychange", visibilityHandler);
 
   scheduleTick();
+  refreshSlot();
+}
+
+/**
+ * Points an already-running session at another station.
+ *
+ * Deliberately not a stop followed by a start: the personal-queue snapshot and
+ * the swapped advance handler belong to the radio *session*, not to one
+ * station, and tearing them down would re-assert the queue track on the embed
+ * only to load the new slot over it a moment later — with `getCurrentTime()`
+ * read mid-load, the restored position would be the radio offset rather than
+ * the queue's. Only the schedule the slot comes from changes here.
+ *
+ * Asking for the station already playing is the common case (every view swap),
+ * and is a no-op rather than a reload.
+ */
+function retune(id: RadioStationId): void {
+  if (id === stationId) return;
+  stationId = id;
+  // Forget the loaded position so the new station's slot reads as a change.
+  loadedVideoId = null;
+  loadedIndex = null;
   refreshSlot();
 }
 
@@ -341,6 +377,7 @@ function runStop(): void {
   }
 
   loadedVideoId = null;
+  loadedIndex = null;
   savedQueuePosition = null;
   stationId = DEFAULT_RADIO_STATION;
   radioStore.set(IDLE);
