@@ -98,7 +98,6 @@ export function initPlayer(mount: HTMLElement): Promise<void> {
     const [restored] = await Promise.all([hydrateQueue(), initEngine(mount)]);
     if (restored.nowPlaying && getLoadGeneration() === generationAtInit) {
       load(restored.nowPlaying.videoId, false);
-      setPlayerState({ status: "paused" });
     }
   })();
 

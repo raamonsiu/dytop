@@ -82,9 +82,53 @@ describe("parseTitleGuess", () => {
   });
 });
 
+describe("parseTitleGuess with the uploading channel", () => {
+  it("stands in as the artist when there is no separator to split", () => {
+    expect(parseTitleGuess("Boig Per Tu", "Sau - Topic")).toEqual({
+      artist: "Sau",
+      title: "Boig Per Tu",
+    });
+  });
+
+  it("flips a title the channel shows is the wrong way round", () => {
+    // Lyric-video channels write "Song - Artist" as consistently as everyone
+    // else writes "Artist - Song"; the channel is what settles which one.
+    expect(parseTitleGuess("IGUALES - Quevedo (Visualizer) | BUENAS NOCHES", "Quevedo")).toEqual({
+      artist: "Quevedo",
+      title: "IGUALES",
+    });
+  });
+
+  it("leaves the natural reading alone when the channel confirms it", () => {
+    expect(parseTitleGuess("Els Catarres - Vull estar amb tu", "Els Catarres")).toEqual({
+      artist: "Els Catarres",
+      title: "Vull estar amb tu",
+    });
+  });
+
+  it("keeps the natural reading when the channel names neither half", () => {
+    // Nothing to go on, so the lookup's swapped retry gets to decide instead.
+    expect(parseTitleGuess("Morat, Juanes - Besos En Guerra", "MoratVEVO")).toEqual({
+      artist: "Morat, Juanes",
+      title: "Besos En Guerra",
+    });
+  });
+
+  it("matches the channel regardless of capitalisation", () => {
+    expect(parseTitleGuess("Jenifer - ELS CATARRES", "Els Catarres")).toEqual({
+      artist: "ELS CATARRES",
+      title: "Jenifer",
+    });
+  });
+});
+
 describe("artistFromChannel", () => {
   it("drops YouTube's auto-generated Topic suffix", () => {
     expect(artistFromChannel("Zion & Lennox - Topic")).toBe("Zion & Lennox");
+  });
+
+  it("drops it whichever dash the channel used", () => {
+    expect(artistFromChannel("Sau – Topic")).toBe("Sau");
   });
 
   it("leaves an ordinary channel name alone", () => {

@@ -30,6 +30,7 @@ describe("radioSlotAt", () => {
     const expected = positionAt(dailySchedule("2026-08-28"), DAY_EPOCH);
     expect(slot.entry.videoId).toBe(expected.entry.videoId);
     expect(slot.offsetInTrack).toBe(expected.offsetInTrack);
+    expect(slot.index).toBe(expected.index);
     expect(slot.day).toBe("2026-08-28");
   });
 
@@ -38,20 +39,12 @@ describe("radioSlotAt", () => {
     expect(slot.changed).toBe(true);
   });
 
-  it("reports the slot's position in the day's order", () => {
-    const schedule = dailySchedule("2026-08-28");
-    const slot = radioSlotAt(DAY_EPOCH, null);
-    // The index, not the videoId, is what tells a boundary from a repeat: two
-    // substituted slots in a row carry the identical entry.
-    expect(schedule.order[slot.index]).toBeDefined();
-    expect(slot.index).toBe(positionAt(schedule, DAY_EPOCH).index);
-  });
-
-  it("moves the index across a track boundary even when the entry repeats", () => {
-    const schedule = dailySchedule("2026-08-28");
+  it("moves the index across a track boundary, which a videoId need not", () => {
+    // The index is what separates a boundary from a repeat: two substituted
+    // slots in a row carry the identical entry. The slot itself says how far
+    // the boundary is, so the test needs nothing from the schedule internals.
     const first = radioSlotAt(DAY_EPOCH, null);
-    const boundary = DAY_EPOCH + (schedule.prefixSums[first.index]! - (DAY_EPOCH % schedule.totalSec));
-    const next = radioSlotAt(boundary, null);
+    const next = radioSlotAt(DAY_EPOCH + (first.entry.durationSec - first.offsetInTrack), null);
     expect(next.index).not.toBe(first.index);
     expect(next.offsetInTrack).toBe(0);
   });
@@ -164,12 +157,6 @@ describe("runtime-unavailable substitution", () => {
     expect(healed.videoId).toBe(RADIO_FALLBACK.videoId);
   });
 
-  it("defaults to substituting nothing when no refusals are passed", () => {
-    expect(radioSlotAt(DAY_EPOCH, null, "default", new Set())).toEqual(
-      radioSlotAt(DAY_EPOCH, null),
-    );
-    expect(upNextEntry(DAY_EPOCH, "default", new Set())).toBe(upNextEntry(DAY_EPOCH));
-  });
 });
 
 describe("upNextEntry", () => {
@@ -194,11 +181,13 @@ describe("upNextEntry", () => {
   });
 });
 
-describe("stationId parameter", () => {
-  it("defaults to the registered default station when omitted", () => {
+describe("optional arguments", () => {
+  it("default to the registered station and to no known refusals", () => {
     expect(dailySchedule("2026-08-28", "default")).toEqual(dailySchedule("2026-08-28"));
-    expect(radioSlotAt(DAY_EPOCH, null, "default")).toEqual(radioSlotAt(DAY_EPOCH, null));
-    expect(upNextEntry(DAY_EPOCH, "default")).toEqual(upNextEntry(DAY_EPOCH));
+    expect(radioSlotAt(DAY_EPOCH, null, "default", new Set())).toEqual(
+      radioSlotAt(DAY_EPOCH, null),
+    );
+    expect(upNextEntry(DAY_EPOCH, "default", new Set())).toBe(upNextEntry(DAY_EPOCH));
   });
 });
 

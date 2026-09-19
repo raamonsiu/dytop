@@ -1,6 +1,6 @@
 import { PROGRESS_POLL_MS } from "@/constants/player";
 import { getCurrentTime, getDuration } from "./engine";
-import { playerStore } from "./playerStore";
+import { isPlaying, playerStore } from "./playerStore";
 
 export interface PlaybackTime {
   current: number;
@@ -17,11 +17,6 @@ let polledTime = 0;
 let polledAt = 0;
 let duration = 0;
 
-function isAdvancing(): boolean {
-  const { status } = playerStore.get();
-  return status === "playing" || status === "buffering";
-}
-
 function poll(): void {
   polledTime = getCurrentTime();
   polledAt = performance.now();
@@ -32,7 +27,7 @@ function emit(): void {
   // Between polls, advance the last reading by wall-clock time. The IFrame API
   // has no timeupdate event and answering getCurrentTime() is a cross-frame
   // call, so polling it every frame would be both wasteful and no smoother.
-  const elapsed = isAdvancing() ? (performance.now() - polledAt) / 1000 : 0;
+  const elapsed = isPlaying() ? (performance.now() - polledAt) / 1000 : 0;
   const estimated = polledTime + elapsed;
   const current = duration > 0 ? Math.min(estimated, duration) : estimated;
 
@@ -52,7 +47,7 @@ function loop(): void {
  * but not a frame loop doing nothing 60 times a second.
  */
 function sync(): void {
-  const shouldRun = listeners.size > 0 && isAdvancing();
+  const shouldRun = listeners.size > 0 && isPlaying();
 
   if (shouldRun && rafId === null) {
     poll();

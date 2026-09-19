@@ -7,7 +7,7 @@
  * the impure controller calls these and applies the engine side effects.
  */
 import { thumbnailUrl } from "@/constants/youtube";
-import { artistFromChannel, parseTitleGuess } from "@/lib/youtube/parseTitleGuess";
+import { parseTitleGuess } from "@/lib/youtube/parseTitleGuess";
 import type { Track } from "@/player/types";
 import {
   DEFAULT_RADIO_STATION,
@@ -30,7 +30,8 @@ export function utcDayString(epochSec: number): string {
   return `${y}-${m}-${day}`;
 }
 
-export interface RadioSlot {  /** The effective entry (blocked slots already substituted) for this instant. */
+export interface RadioSlot {
+  /** The effective entry (blocked slots already substituted) for this instant. */
   entry: RadioManifestEntry;
   /** Second within the entry. */
   offsetInTrack: number;
@@ -55,12 +56,12 @@ const NONE: ReadonlySet<string> = new Set();
 /**
  * Swaps an entry the embed refused at runtime for the station fallback.
  *
- * The maintainer-confirmed `blocked` flag is substituted at schedule build
- * (see `dailySchedule`), but a video can start refusing embeds long before
- * anyone gets round to marking it. Those failures are discovered per-session
- * by the controller and substituted here instead, on the same slot and the
- * same offset: the loop keeps its wall-clock shape, so a client that never hit
- * the failure stays in sync second for second.
+ * Distinct from the maintainer-confirmed `blocked` substitution in
+ * `dailySchedule`, which rebuilds `prefixSums` around the fallback's own
+ * duration. This one deliberately does not: it keeps the slot and the offset
+ * the schedule already chose, so a client that never hit the refusal stays in
+ * sync second for second. Refusals are discovered per session by the
+ * controller — see `unavailableVideos` there for why they are tracked at all.
  */
 function substitute(
   entry: RadioManifestEntry,
@@ -132,14 +133,14 @@ export function upNextEntry(
  * effective track at most once per loop, so it is unique within the loop.
  */
 export function entryToTrack(entry: RadioManifestEntry): Track {
-  const { artist, title } = parseTitleGuess(entry.title);
+  const { artist, title } = parseTitleGuess(entry.title, entry.author);
   return {
     id: entry.videoId,
     videoId: entry.videoId,
     title: entry.title,
     author: entry.author,
     thumb: thumbnailUrl(entry.videoId),
-    artistGuess: artist || artistFromChannel(entry.author),
-    titleGuess: title || entry.title,
+    artistGuess: artist,
+    titleGuess: title,
   };
 }

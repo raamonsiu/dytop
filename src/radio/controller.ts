@@ -14,7 +14,7 @@
 import { createStore, useStoreSelector } from "@/lib/createStore";
 import { loadLyricsFor } from "@/lyrics/lyricsStore";
 import {
-  currentVideoFailed,
+  type AdvanceReason,
   getAdvanceHandler,
   getCurrentTime,
   hasUserInteracted,
@@ -24,7 +24,7 @@ import {
   play,
   seek,
 } from "@/player/engine";
-import { isPlaying, setPlayerState } from "@/player/playerStore";
+import { isPlaying } from "@/player/playerStore";
 import { queueStore } from "@/player/queueStore";
 import { DEFAULT_RADIO_STATION, type RadioManifestEntry, type RadioStationId } from "./manifest";
 import { entryToTrack, radioSlotAt, upNextEntry } from "./position";
@@ -39,10 +39,6 @@ export interface RadioState {
   offsetInTrack: number;
   /** The entry deterministically scheduled after `entry`, for the UI. */
   next: RadioManifestEntry | null;
-  /** The videoId the embed was last told to load, for change detection. */
-  loadedVideoId: string | null;
-  /** UTC day whose schedule produced the current slot (midnight continuity). */
-  day: string | null;
   /** True while the slot is loaded but waiting on a user gesture to play
    * audibly (see `unlockRadioPlayback`). */
   needsGesture: boolean;
@@ -54,8 +50,6 @@ const IDLE: RadioState = {
   entry: null,
   offsetInTrack: 0,
   next: null,
-  loadedVideoId: null,
-  day: null,
   needsGesture: false,
 };
 
@@ -137,16 +131,14 @@ function refreshSlot(): void {
   // tick that lands on a boundary second resolves them from different instants
   // and the hint names the track that just started playing.
   const now = epochNow();
-  const slot = radioSlotAt(now, loadedVideoId, stationId, unavailableVideos);
-  loadedIndex = slot.index;
+  const slot = radioSlotAt(now, loadedSlot?.videoId ?? null, stationId, unavailableVideos);
   if (slot.changed) {
-    loadedVideoId = slot.entry.videoId;
     load(slot.entry.videoId, unlocked, slot.offsetInTrack);
-    if (!unlocked) setPlayerState({ status: "paused" });
   } else if (!slot.unavailable) {
     seek(slot.offsetInTrack);
   }
   if (unlocked && !slot.unavailable) ensurePlaying();
+  loadedSlot = { videoId: slot.entry.videoId, day: slot.day, index: slot.index };
   loadLyricsFor(entryToTrack(slot.entry));
   radioStore.set({
     active: true,
@@ -154,8 +146,6 @@ function refreshSlot(): void {
     entry: slot.entry,
     offsetInTrack: slot.offsetInTrack,
     next: upNextEntry(now, stationId, unavailableVideos),
-    loadedVideoId,
-    day: slot.day,
     needsGesture: !unlocked,
   });
 }
@@ -190,24 +180,32 @@ let lastHealEpoch = 0;
  * module (or the UI) can perceive anyway — the tick loop itself only runs
  * once a second.
  *
- * An advance the embed requested because it *refused* the video, rather than
- * because the track ended, is the one case where re-resolving the same slot is
- * not enough: the schedule still names the refused video, so it would be
- * re-asserted and fail again for the rest of the slot. Recording it first is
- * what turns that loop into a single substitution (see `unavailableVideos`).
+ * A refusal is the one reason that must not be debounced; see the body.
  */
-function heal(): void {
+function heal(reason?: AdvanceReason): void {
   if (!active) return;
+
+  if (reason?.kind === "refused") {
+    // Deliberately ahead of the debounce, and not subject to it. A refusal is
+    // a one-shot fact that arrives exactly once, where the debounce exists for
+    // a repeating storm; collapsing it into the previous second would leave
+    // the slot silent on a video the embed has already rejected until the next
+    // boundary, minutes away.
+    unavailableVideos.add(reason.videoId);
+    lastHealEpoch = epochNow();
+    refreshSlot();
+    return;
+  }
+
   const now = epochNow();
   if (now === lastHealEpoch) return;
   lastHealEpoch = now;
-  if (loadedVideoId && currentVideoFailed()) unavailableVideos.add(loadedVideoId);
   refreshSlot();
 }
 
 let active = false;
 let stationId: RadioStationId = DEFAULT_RADIO_STATION;
-let savedAdvanceHandler: (() => void) | null = null;
+let savedAdvanceHandler: ((reason: AdvanceReason) => void) | null = null;
 /** Where the personal queue stood when radio took the embed over, restored by
  * `runStop`. `wasPlaying` is the part that decides between resuming it and
  * merely cueing it back: a queue that was only ever restored-and-cued must not
@@ -215,11 +213,17 @@ let savedAdvanceHandler: (() => void) | null = null;
 let savedQueuePosition:
   | { videoId: string; positionSec: number; wasPlaying: boolean }
   | null = null;
-let loadedVideoId: string | null = null;
-/** Which slot of the day's order the embed is on. Paired with the day, this is
- * what tells the tick that the deterministic position moved; see
- * `RadioSlot.index` for why the videoId alone cannot. */
-let loadedIndex: number | null = null;
+/**
+ * Where the embed currently stands, or null while radio holds nothing.
+ *
+ * All three fields answer different questions and none is derivable from the
+ * others: `videoId` is what `radioSlotAt` compares against to decide whether a
+ * load is needed at all, while `day` and `index` together are the only way the
+ * tick can tell that the deterministic position moved — two substituted slots
+ * in a row carry the same entry, so the videoId does not change across that
+ * boundary (see `RadioSlot.index`).
+ */
+let loadedSlot: { videoId: string; day: string; index: number } | null = null;
 let tickId: ReturnType<typeof setInterval> | null = null;
 let visibilityHandler: (() => void) | null = null;
 
@@ -241,11 +245,10 @@ function scheduleTick(): void {
   if (tickId) return;
   tickId = setInterval(() => {
     if (!active) return;
-    const slot = radioSlotAt(epochNow(), loadedVideoId, stationId, unavailableVideos);
-    const state = radioStore.get();
+    const slot = radioSlotAt(epochNow(), loadedSlot?.videoId ?? null, stationId, unavailableVideos);
     // Only act when the deterministic position moved (new slot or new day) —
     // this catches an ENDED event that never fired and the 00:00 UTC reseed.
-    if (slot.index !== loadedIndex || slot.day !== state.day) {
+    if (slot.index !== loadedSlot?.index || slot.day !== loadedSlot.day) {
       refreshSlot();
     }
   }, RADIO_TICK_MS);
@@ -317,9 +320,8 @@ export function startRadio(id: RadioStationId = DEFAULT_RADIO_STATION): void {
 function retune(id: RadioStationId): void {
   if (id === stationId) return;
   stationId = id;
-  // Forget the loaded position so the new station's slot reads as a change.
-  loadedVideoId = null;
-  loadedIndex = null;
+  // Forget where we were so the new station's slot reads as a change.
+  loadedSlot = null;
   refreshSlot();
 }
 
@@ -367,17 +369,12 @@ function runStop(): void {
   if (savedQueuePosition) {
     const { videoId, positionSec, wasPlaying } = savedQueuePosition;
     load(videoId, wasPlaying, positionSec);
-    // CUED carries no status of its own, so a cue leaves the store on
-    // "loading" forever. Land on paused instead, exactly as the queue restore
-    // in `initPlayer` and the cued radio slot in `refreshSlot` both do.
-    if (!wasPlaying) setPlayerState({ status: "paused" });
     loadLyricsFor(queueStore.get().nowPlaying);
   } else {
     pause();
   }
 
-  loadedVideoId = null;
-  loadedIndex = null;
+  loadedSlot = null;
   savedQueuePosition = null;
   stationId = DEFAULT_RADIO_STATION;
   radioStore.set(IDLE);

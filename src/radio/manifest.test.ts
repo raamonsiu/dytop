@@ -27,29 +27,22 @@ describe("MANIFEST", () => {
 });
 
 describe("RADIO_FALLBACK", () => {
-  it("is a valid manifest entry with a positive duration and filled fields", () => {
+  it("is a valid manifest entry with a schedulable duration and filled fields", () => {
     expect(RADIO_FALLBACK.videoId.length).toBeGreaterThan(0);
     expect(RADIO_FALLBACK.durationSec).toBeGreaterThan(0);
+    // A bound check only. Whether the id behind it is a live stream — the bug
+    // this entry used to carry — cannot be seen from here: the duration is
+    // hand-written, and a stream's entry simply lied about it.
+    expect(RADIO_FALLBACK.durationSec).toBeLessThan(MAX_TRACK_DURATION_SECONDS);
     expect(RADIO_FALLBACK.title.trim().length).toBeGreaterThan(0);
     expect(RADIO_FALLBACK.author.trim().length).toBeGreaterThan(0);
   });
 
   it("is not also scheduled on its own", () => {
-    // A slot keys its Track off the videoId, so a fallback that is also a
-    // manifest entry would appear twice in one loop under a single id.
     expect(MANIFEST.some((entry) => entry.videoId === RADIO_FALLBACK.videoId)).toBe(false);
   });
 
   it("is never itself blocked, since nothing would be left to substitute", () => {
     expect(RADIO_FALLBACK.blocked).toBeUndefined();
-  });
-
-  it("declares a duration the schedule can be built from", () => {
-    // A bound check only. Whether the id behind it is a live stream (the bug
-    // this entry used to carry) cannot be seen from here at all: the duration
-    // is hand-written, and a stream's entry simply lied about it. That one is
-    // on whoever edits the constant — see its doc comment for the rules.
-    expect(Number.isFinite(RADIO_FALLBACK.durationSec)).toBe(true);
-    expect(RADIO_FALLBACK.durationSec).toBeLessThan(MAX_TRACK_DURATION_SECONDS);
   });
 });

@@ -1,25 +1,23 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchLyrics } from "./lyricsOvhClient";
 
 describe("lyrics.ovh client", () => {
-  it("asks for nothing when the artist is missing", async () => {
-    // Artist and title are path segments, so an empty artist would build
-    // ".../v1//Song" — a URL that can never match.
-    const fetchSpy = vi.spyOn(globalThis, "fetch");
+  let fetchSpy: ReturnType<typeof vi.spyOn>;
 
-    expect(await fetchLyrics("", "Boig Per Tu")).toEqual({ status: "not-found" });
-    expect(await fetchLyrics("   ", "Boig Per Tu")).toEqual({ status: "not-found" });
-    expect(fetchSpy).not.toHaveBeenCalled();
+  beforeEach(() => {
+    fetchSpy = vi.spyOn(globalThis, "fetch");
+  });
 
+  afterEach(() => {
     fetchSpy.mockRestore();
   });
 
-  it("asks for nothing when the title is missing", async () => {
-    const fetchSpy = vi.spyOn(globalThis, "fetch");
-
-    expect(await fetchLyrics("Sau", "")).toEqual({ status: "not-found" });
+  it.each([
+    ["no artist", "", "Boig Per Tu"],
+    ["a blank artist", "   ", "Boig Per Tu"],
+    ["no title", "Sau", ""],
+  ])("asks for nothing given %s", async (_label, artist, title) => {
+    expect(await fetchLyrics(artist, title)).toEqual({ status: "not-found" });
     expect(fetchSpy).not.toHaveBeenCalled();
-
-    fetchSpy.mockRestore();
   });
 });

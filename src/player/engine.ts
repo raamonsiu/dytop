@@ -46,30 +46,30 @@ export function hasUserInteracted(): boolean {
   return interacted;
 }
 
+/**
+ * Why the embed is asking to move on.
+ *
+ * The queue treats both the same way, but radio must not: it picks its track
+ * from wall-clock time, so on a refusal the deterministic schedule would keep
+ * naming the same video for the rest of its slot. Handing the reason to the
+ * handler keeps that causal fact with the call that carries it, rather than
+ * leaving callers to read it back out of this module afterwards.
+ */
+export type AdvanceReason =
+  | { kind: "ended" }
+  /** Refused for its own sake (gone, region-locked, embedding disabled)
+   * rather than by a fault that breaks every video equally. */
+  | { kind: "refused"; videoId: string };
+
 /** Set by the controller. Kept as a hook rather than an import so the engine
  * stays a leaf module: the controller imports the engine, never the reverse. */
-let advanceHandler: (() => void) | null = null;
+let advanceHandler: ((reason: AdvanceReason) => void) | null = null;
 
 /** A load requested before the embed was ready, replayed on ready. */
 let pending: { videoId: string; autoplay: boolean; startSeconds: number } | null = null;
 
-/**
- * True when the video the embed currently holds was refused for its own sake
- * (gone, region-locked, embedding disabled) rather than by a fault that breaks
- * every video equally. Cleared by the next `load()`.
- *
- * The queue only needs to move on, which the skip timer already does. Radio
- * picks its track from wall-clock time instead, so the deterministic schedule
- * keeps naming the refused video for the rest of its slot: it reads this to
- * substitute the station fallback rather than re-assert a video it now knows
- * the embed will reject again.
- */
-let videoFailed = false;
-
-/** Whether the loaded video was refused for its own sake. See `videoFailed`. */
-export function currentVideoFailed(): boolean {
-  return videoFailed;
-}
+/** What the embed was last told to hold, so a failure can name it. */
+let loadedVideoId: string | null = null;
 
 /**
  * Bumped on every `load()` call. Lets a caller that kicked off async work
@@ -96,13 +96,13 @@ function clearSkipTimer(): void {
 }
 
 /** Registers the callback fired when the current track ends or is skipped. */
-export function onAdvanceRequested(handler: () => void): void {
+export function onAdvanceRequested(handler: (reason: AdvanceReason) => void): void {
   advanceHandler = handler;
 }
 
 /** The currently registered advance callback, so callers can swap it in and
  * restore it later (the radio controller does exactly this). */
-export function getAdvanceHandler(): (() => void) | null {
+export function getAdvanceHandler(): ((reason: AdvanceReason) => void) | null {
   return advanceHandler;
 }
 
@@ -158,7 +158,7 @@ function handleStateChange(event: YT.OnStateChangeEvent): void {
       break;
     case YT.PlayerState.ENDED:
       setPlayerState({ status: "ended" });
-      advanceHandler?.();
+      advanceHandler?.({ kind: "ended" });
       break;
     case YT.PlayerState.UNSTARTED:
     case YT.PlayerState.CUED:
@@ -175,9 +175,12 @@ function handleError(event: YT.OnErrorEvent): void {
   // fault breaks every video identically, so skipping would silently chew
   // through the whole queue instead of showing the problem once.
   if (SKIPPABLE_YT_ERROR_CODES.has(code)) {
-    videoFailed = true;
+    const refused = loadedVideoId;
     clearSkipTimer();
-    skipTimer = setTimeout(() => advanceHandler?.(), ERROR_SKIP_DELAY_MS);
+    skipTimer = setTimeout(
+      () => advanceHandler?.(refused ? { kind: "refused", videoId: refused } : { kind: "ended" }),
+      ERROR_SKIP_DELAY_MS,
+    );
   }
 }
 
@@ -245,9 +248,13 @@ export function initEngine(mount: HTMLElement): Promise<void> {
  */
 export function load(videoId: string, autoplay: boolean, startSeconds = 0): void {
   loadGeneration++;
-  videoFailed = false;
+  loadedVideoId = videoId;
   clearSkipTimer();
-  setPlayerState({ errorKey: null, duration: 0, status: "loading" });
+  // A cue reports no state change of its own — the IFrame API's CUED carries
+  // no status — so the store would sit on "loading" for ever and the transport
+  // spin against a player that is simply waiting. Landing on the state the
+  // embed will actually be in saves every caller correcting it afterwards.
+  setPlayerState({ errorKey: null, duration: 0, status: autoplay ? "loading" : "paused" });
 
   if (!ready || !player) {
     // Replayed by markReady(). Only the latest request is kept: queueing them

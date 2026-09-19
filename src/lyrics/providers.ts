@@ -21,7 +21,9 @@ export const LYRICS_PROVIDERS: LyricsProviderFetch[] = [fetchFromLrclib, fetchFr
  * of giving up on anyway.
  *
  * Skipped when it cannot say anything new: nothing to swap in, or two terms
- * that are already identical.
+ * that are already identical. `parseTitleGuess` settles the orientation on its
+ * own whenever the uploading channel names one of the halves, so what reaches
+ * here is the genuinely ambiguous remainder.
  */
 function queryVariants(artist: string, title: string): [string, string][] {
   const natural: [string, string] = [artist, title];
@@ -58,7 +60,13 @@ export async function fetchLyrics(
       if (result.status === "synced" || result.status === "plain") return result;
       if (result.status === "not-found") sawNotFound = true;
     }
+
+    // Not one provider managed an answer: they failed on the network or on a
+    // bad response, and neither depends on how the query was worded. Asking
+    // again with the terms swapped would pay the same latency to fail the same
+    // way, so a provider outage costs one round of requests, not two.
+    if (!sawNotFound) return { status: "error" };
   }
 
-  return sawNotFound ? { status: "not-found" } : { status: "error" };
+  return { status: "not-found" };
 }

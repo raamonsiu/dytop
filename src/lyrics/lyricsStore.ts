@@ -53,11 +53,8 @@ export function loadLyricsFor(track: Track | null): void {
   controller?.abort();
 
   if (!sameTrack) {
-    // The delay is a per-track manual correction (e.g. a laggy upload's
-    // intro), not a listening preference, so it should not carry over to the
-    // next song. Keyed on id rather than firing on every call, since callers
-    // like the radio's tick-driven refresh re-invoke this for the still-
-    // playing track without an actual change.
+    // A per-track manual correction (e.g. for a laggy upload's intro), not a
+    // listening preference, so it must not carry over to the next song.
     lastTrackId = trackId;
     setPref("lyricsDelay", 0);
   }

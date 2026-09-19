@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // triggers) is what lets the start/stop handoff contract be asserted at all.
 vi.mock("@/lyrics/lyricsStore", () => ({ loadLyricsFor: vi.fn() }));
 vi.mock("@/player/engine", () => ({
-  currentVideoFailed: vi.fn(() => false),
   getAdvanceHandler: vi.fn(() => null),
   getCurrentTime: vi.fn(() => 0),
   hasUserInteracted: vi.fn(() => true),
@@ -16,8 +15,9 @@ vi.mock("@/player/engine", () => ({
   seek: vi.fn(),
 }));
 
+import { thumbnailUrl } from "@/constants/youtube";
 import { getCurrentTime, load, pause } from "@/player/engine";
-import { playerStore, setPlayerState } from "@/player/playerStore";
+import { setPlayerState } from "@/player/playerStore";
 import { queueStore } from "@/player/queueStore";
 import type { Track } from "@/player/types";
 import { radioStore, startRadio, stopRadio } from "./controller";
@@ -27,24 +27,24 @@ const TRACK: Track = {
   videoId: "queue-video",
   title: "Queued Song",
   author: "Someone",
-  thumb: "https://i.ytimg.com/vi/queue-video/hqdefault.jpg",
+  thumb: thumbnailUrl("queue-video"),
   artistGuess: "Someone",
   titleGuess: "Queued Song",
 };
 
-/** `stopRadio` defers its teardown by one microtask so a view swap can cancel
- * it (see the `pendingStop` guard); the restore only runs after that. */
+/**
+ * `stopRadio` defers its teardown by one microtask so a view swap can cancel
+ * it (see the `pendingStop` guard); the restore only runs after that.
+ *
+ * Also the teardown between tests: a session left running would carry its
+ * module state — and its 1s tick — into the next one.
+ */
 async function stopAndSettle(): Promise<void> {
   stopRadio();
   await Promise.resolve();
 }
 
-afterEach(async () => {
-  // Each test leaves the module's session state behind (and its 1s tick), so
-  // the next one would start mid-session.
-  stopRadio();
-  await Promise.resolve();
-});
+afterEach(stopAndSettle);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -54,27 +54,19 @@ beforeEach(() => {
 });
 
 describe("session lifecycle", () => {
-  it("leaves the embed alone when the same station is started again", () => {
-    // What a legacy/minimal view swap does: unmount one radio view and mount
-    // the other for the same /radio session, in the same commit.
+  it("survives the stop/start pair a view swap fires, untouched", async () => {
+    // Switching between the legacy and minimal radio views unmounts one owner
+    // and mounts the other for the same /radio session, in the same commit.
     startRadio();
     vi.mocked(load).mockClear();
 
     stopRadio();
     startRadio();
-
-    expect(load).not.toHaveBeenCalled();
-    expect(radioStore.get().active).toBe(true);
-  });
-
-  it("does not tear the session down when the paired start cancels the stop", async () => {
-    startRadio();
-    stopRadio();
-    startRadio();
     await Promise.resolve();
 
     // The deferred teardown must have been cancelled outright, not merely
-    // delayed past the start that overtook it.
+    // delayed past the start that overtook it, and the embed left as it was.
+    expect(load).not.toHaveBeenCalled();
     expect(pause).not.toHaveBeenCalled();
     expect(radioStore.get().active).toBe(true);
   });
@@ -104,10 +96,8 @@ describe("personal-queue handoff", () => {
     vi.mocked(load).mockClear();
     await stopAndSettle();
 
+    // Cued, not played. `load` itself lands the store on "paused" from here.
     expect(load).toHaveBeenCalledWith("queue-video", false, 0);
-    // Cueing reports no status of its own, so the transport would spin forever
-    // on "loading" without this.
-    expect(playerStore.get().status).toBe("paused");
   });
 
   it("pauses the embed when there was no queue track to restore", async () => {

@@ -54,14 +54,25 @@ describe("fetchLyrics (multi-provider fallback)", () => {
   });
 
   it("counts the swapped pass towards not-found rather than error", async () => {
-    // Four misses across two providers and two query orders is still a
-    // confident "this track has no lyrics", not a failure.
+    // Misses in both query orders are still a confident "this track has no
+    // lyrics", not a failure.
     const empty = provider({ status: "not-found" });
 
     const result = await fetchLyrics("artist", "title", undefined, [empty]);
 
     expect(result).toEqual({ status: "not-found" });
     expect(empty).toHaveBeenCalledTimes(2);
+  });
+
+  it("gives up before the swapped pass when nothing answered at all", async () => {
+    // An outage does not depend on how the query was worded, so the second
+    // pass would only pay the same latency to fail the same way.
+    const broken = provider({ status: "error" });
+
+    const result = await fetchLyrics("artist", "title", undefined, [broken]);
+
+    expect(result).toEqual({ status: "error" });
+    expect(broken).toHaveBeenCalledTimes(1);
   });
 
   it("stops trying providers once the signal is already aborted", async () => {
@@ -102,7 +113,7 @@ describe("fetchLyrics (inverted-title retry)", () => {
 
   it("exhausts every provider in the natural order before swapping anything", async () => {
     // The natural reading on a second source beats a swapped one on the first.
-    const first = onlyFor("never", "matches");
+    const first = provider({ status: "not-found" });
     const second = onlyFor("Radiohead", "Creep");
 
     const result = await fetchLyrics("Radiohead", "Creep", undefined, [first, second]);
@@ -110,14 +121,6 @@ describe("fetchLyrics (inverted-title retry)", () => {
     expect(result).toEqual({ status: "plain", text: "found it" });
     expect(first).toHaveBeenCalledTimes(1);
     expect(second).toHaveBeenCalledTimes(1);
-  });
-
-  it("never swaps when the natural order already answered", async () => {
-    const source = onlyFor("Radiohead", "Creep");
-
-    await fetchLyrics("Radiohead", "Creep", undefined, [source]);
-
-    expect(source).toHaveBeenCalledTimes(1);
   });
 
   it.each([
