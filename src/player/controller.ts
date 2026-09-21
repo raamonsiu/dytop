@@ -65,7 +65,9 @@ export function initPlayer(mount: HTMLElement): Promise<void> {
 
   // Lyrics follow the queue rather than being fetched at each call site, so
   // every path that changes the track, advance, jump, restore, error skip,
-  // gets them without remembering to ask.
+  // gets them without remembering to ask. Firings that leave the track alone
+  // (an enqueue, a reorder) are harmless: `loadLyricsFor` ignores a repeat
+  // request for the track already showing.
   //
   // The very first firing is special-cased: it's `hydrateQueue()` (awaited
   // further down) writing the restored track into `queueStore` asynchronously,
@@ -73,16 +75,12 @@ export function initPlayer(mount: HTMLElement): Promise<void> {
   // restore by the time it lands. Skip only that first, possibly-stale
   // firing when the generation has moved on; every later firing is a real
   // queue change (advance/jump/etc.) and always applies.
-  let lastTrackId: string | null = null;
   let isFirstFiring = true;
   queueStore.subscribe(() => {
-    const track = queueStore.get().nowPlaying;
-    if (track?.id === lastTrackId) return;
-    lastTrackId = track?.id ?? null;
     const wasFirstFiring = isFirstFiring;
     isFirstFiring = false;
     if (wasFirstFiring && getLoadGeneration() !== generationAtInit) return;
-    loadLyricsFor(track);
+    loadLyricsFor(queueStore.get().nowPlaying);
   });
 
   onAdvanceRequested(() => {
