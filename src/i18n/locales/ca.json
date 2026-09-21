@@ -26,7 +26,7 @@
     "previous": "Anterior",
     "seek": "Vés a un punt de la pista",
     "progress": "Progrés de la reproducció",
-    "pasteUrl": "Enganxa una URL de YouTube…",
+    "searchOrPaste": "Cerca a YouTube o enganxa una URL…",
     "add": "afegeix",
     "adding": "…",
     "added": "Afegit a la cua.",
@@ -38,6 +38,13 @@
     "volume": "Volum",
     "mute": "Silencia",
     "unmute": "Treu el silenci"
+  },
+  "search": {
+    "results": "Resultats de la cerca",
+    "loading": "Cercant…",
+    "empty": "Cap resultat.",
+    "unavailable": "La cerca no està disponible ara mateix. Enganxar una URL continua funcionant.",
+    "loadingMore": "Carregant-ne més…"
   },
   "lyrics": {
     "loading": "Cercant la lletra…",

@@ -20,6 +20,13 @@ export const MAX_PLAYLIST_TRACKS = 100;
 /** How long the throwaway playlist-resolving player gets before giving up. */
 export const PLAYLIST_RESOLVE_TIMEOUT_MS = 10_000;
 
+/** Quiet time after the last keystroke before a search is sent: long enough
+ * to skip the intermediate words of a fast typist, short enough to feel live. */
+export const SEARCH_DEBOUNCE_MS = 350;
+
+/** One letter matches half of YouTube; nothing useful comes back below this. */
+export const SEARCH_MIN_CHARS = 2;
+
 /** Step for the lyrics sync nudge, in seconds. */
 export const LYRICS_DELAY_STEP_SECONDS = 0.25;
 

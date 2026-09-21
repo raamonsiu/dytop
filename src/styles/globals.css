@@ -18,6 +18,15 @@
    than squeezing them to a couple of lines. */
 @custom-variant short (@media (max-height: 720px));
 
+/* Scrolls, but draws no bar: for short lists where a native scrollbar clashes
+   with the view and the wheel, touch and arrow keys already do the job. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 :root {
   --font-mono-ui: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
     Consolas, monospace;

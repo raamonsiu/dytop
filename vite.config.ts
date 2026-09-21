@@ -1,10 +1,34 @@
 import { fileURLToPath } from "node:url";
+import type { ProxyOptions } from "vite";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
+/**
+ * Dev and preview stand-in for docker/nginx.conf's search proxy, so search
+ * works under `pnpm dev` too. Same rules: forward to InnerTube, send nothing
+ * that identifies the page or the person.
+ */
+const youtubeSearchProxy: Record<string, ProxyOptions> = {
+  "/api/youtube/search": {
+    target: "https://www.youtube.com",
+    changeOrigin: true,
+    rewrite: () => "/youtubei/v1/search?prettyPrint=false",
+    configure: (proxy) => {
+      proxy.on("proxyReq", (request) => {
+        for (const header of ["origin", "referer", "cookie"]) request.removeHeader(header);
+      });
+      proxy.on("proxyRes", (response) => {
+        delete response.headers["set-cookie"];
+      });
+    },
+  },
+};
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: { proxy: youtubeSearchProxy },
+  preview: { proxy: youtubeSearchProxy },
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

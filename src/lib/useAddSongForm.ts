@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useTransientMessage } from "@/lib/useTransientMessage";
 import { useChromeHold } from "@/lib/useUiVisibility";
-import { addTrackByUrl } from "@/player/controller";
+import type { SearchResult } from "@/lib/youtube/search";
+import { addTrackByUrl, addTrackFromSearch } from "@/player/controller";
 
 interface AddSongFeedback {
   ok: boolean;
@@ -11,7 +12,8 @@ interface AddSongFeedback {
 }
 
 /**
- * Shared state and submit handling for the "paste a YouTube URL" form.
+ * Shared state and submit handling for the "paste a YouTube URL" form, plus
+ * adding a picked search result for the views that offer search.
  * Holds the chrome open while a URL is focused or non-empty, and reports the
  * outcome as a transient feedback message. Used by both the minimal and
  * legacy add-song inputs, which only differ in styling.
@@ -54,5 +56,13 @@ export function useAddSongForm() {
     }
   }
 
-  return { url, setUrl, pending, focused, setFocused, feedback, handleSubmit };
+  /** Picking a search result behaves like a successful paste: the field
+   * empties, which also closes the results, and the usual confirmation shows. */
+  function addSearchResult(result: SearchResult) {
+    addTrackFromSearch(result);
+    setUrl("");
+    show({ ok: true, key: "player.added" });
+  }
+
+  return { url, setUrl, pending, focused, setFocused, feedback, handleSubmit, addSearchResult };
 }

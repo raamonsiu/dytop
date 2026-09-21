@@ -12,6 +12,26 @@ function asString(value: unknown): string | null {
   return typeof value === "string" && value.length > 0 ? value : null;
 }
 
+/** A queue entry from metadata already in hand, with the lyrics guess filled in. */
+export function buildTrack(
+  videoId: string,
+  entryId: string,
+  title: string,
+  author: string,
+  thumb: string = thumbnailUrl(videoId),
+): Track {
+  const guess = parseTitleGuess(title, author);
+  return {
+    id: entryId,
+    videoId,
+    title,
+    author,
+    thumb,
+    artistGuess: guess.artist,
+    titleGuess: guess.title,
+  };
+}
+
 /**
  * Fetches title, channel and thumbnail for a video.
  *
@@ -49,17 +69,13 @@ export async function fetchTrack(
     const title = asString(data.title);
     if (!title) return fallback;
 
-    const author = asString(data.author_name) ?? "";
-    const guess = parseTitleGuess(title, author);
-    return {
-      id: entryId,
+    return buildTrack(
       videoId,
+      entryId,
       title,
-      author,
-      thumb: asString(data.thumbnail_url) ?? thumbnailUrl(videoId),
-      artistGuess: guess.artist,
-      titleGuess: guess.title,
-    };
+      asString(data.author_name) ?? "",
+      asString(data.thumbnail_url) ?? thumbnailUrl(videoId),
+    );
   } catch {
     return fallback;
   }

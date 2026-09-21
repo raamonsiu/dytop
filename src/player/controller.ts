@@ -3,7 +3,8 @@ import { clamp } from "@/lib/clamp";
 import { getPrefs, setPref } from "@/lib/prefs";
 import { extractYouTubeId } from "@/lib/youtube/extractYouTubeId";
 import { extractYouTubePlaylistId } from "@/lib/youtube/extractYouTubePlaylistId";
-import { fetchTrack } from "@/lib/youtube/oembed";
+import { buildTrack, fetchTrack } from "@/lib/youtube/oembed";
+import type { SearchResult } from "@/lib/youtube/search";
 import { loadLyricsFor } from "@/lyrics/lyricsStore";
 import { resyncClock } from "./clock";
 import {
@@ -118,14 +119,29 @@ export async function addTrackByUrl(url: string): Promise<AddTrackResult> {
   if (!videoId) return { ok: false, reason: "invalid-url" };
 
   const track = await fetchTrack(videoId, crypto.randomUUID());
+  enqueueTrack(track);
+  return { ok: true, kind: "track", track };
+}
+
+/**
+ * Queues a search result exactly as if its URL had been pasted.
+ *
+ * The search already returned title and channel, so there is no oEmbed round
+ * trip: the track lands in the queue the instant it's picked.
+ */
+export function addTrackFromSearch(result: SearchResult): AddTrackResult {
+  const track = buildTrack(result.videoId, crypto.randomUUID(), result.title, result.author);
+  enqueueTrack(track);
+  return { ok: true, kind: "track", track };
+}
+
+function enqueueTrack(track: Track): void {
   const wasEmpty = queueStore.get().nowPlaying === null;
   enqueue(track);
 
   // Adding to an idle player is an explicit user action, so it counts as the
   // gesture that unlocks autoplay.
   if (wasEmpty) playNext();
-
-  return { ok: true, kind: "track", track };
 }
 
 async function addPlaylistById(playlistId: string): Promise<AddTrackResult> {

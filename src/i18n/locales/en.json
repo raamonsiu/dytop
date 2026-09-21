@@ -26,7 +26,7 @@
     "previous": "Previous",
     "seek": "Seek within the track",
     "progress": "Playback progress",
-    "pasteUrl": "Paste a YouTube URL…",
+    "searchOrPaste": "Search YouTube or paste a URL…",
     "add": "add",
     "adding": "…",
     "added": "Added to the queue.",
@@ -38,6 +38,13 @@
     "volume": "Volume",
     "mute": "Mute",
     "unmute": "Unmute"
+  },
+  "search": {
+    "results": "Search results",
+    "loading": "Searching…",
+    "empty": "No results.",
+    "unavailable": "Search is unavailable right now. Pasting a URL still works.",
+    "loadingMore": "Loading more…"
   },
   "lyrics": {
     "loading": "Looking for lyrics…",

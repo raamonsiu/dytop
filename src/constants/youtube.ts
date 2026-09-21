@@ -2,10 +2,38 @@ export const YT_IFRAME_API_SRC = "https://www.youtube.com/iframe_api";
 
 export const YT_OEMBED_ENDPOINT = "https://www.youtube.com/oembed";
 
+/**
+ * Same-origin path that nginx (and the Vite dev server) proxies to YouTube's
+ * internal InnerTube search endpoint. There is no keyless public search API,
+ * and InnerTube sends no CORS headers, so the browser can't call it directly;
+ * going through our own origin also keeps the CSP's `connect-src 'self'`.
+ */
+export const YT_SEARCH_PROXY_PATH = "/api/youtube/search";
+
+/**
+ * The client InnerTube is told it's talking to. Undocumented, so the version is
+ * pinned to one known to answer; YouTube tolerates old versions of the WEB
+ * client for a long time, but this is the first thing to bump if search starts
+ * returning 400s.
+ */
+export const YT_INNERTUBE_CLIENT = {
+  clientName: "WEB",
+  clientVersion: "2.20250101.00.00",
+} as const;
+
+/** Search filter "Type: Video", as serialized by YouTube's own filter menu.
+ * Keeps channels, playlists and shorts shelves out of the results. */
+export const YT_SEARCH_VIDEOS_ONLY = "EgIQAQ==";
+
 /** Fallback thumbnail. Always exists for a valid id, so it covers an oEmbed
  * outage without a second request. */
 export function thumbnailUrl(videoId: string): string {
   return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+}
+
+/** 320x180 thumbnail, for list rows where hqdefault would be wasted bytes. */
+export function smallThumbnailUrl(videoId: string): string {
+  return `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
 }
 
 export function watchUrl(videoId: string): string {

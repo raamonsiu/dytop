@@ -14,9 +14,13 @@ COPY . .
 RUN pnpm build
 
 # ---- runner: static files only, no Node at runtime ----
-# The app is a pure SPA with no backend, so nginx is all that's needed.
+# The app is a pure SPA; nginx serves it and proxies the one thing a browser
+# can't reach on its own, YouTube search.
 FROM nginx:alpine AS runner
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+# A template so the entrypoint can fill in the container's own DNS resolver,
+# which the search proxy needs to resolve YouTube at request time.
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
+COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
 COPY docker/security-headers.conf /etc/nginx/security-headers.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
 

@@ -26,7 +26,7 @@
     "previous": "Anterior",
     "seek": "Ir a un punto de la pista",
     "progress": "Progreso de reproducción",
-    "pasteUrl": "Pega una URL de YouTube…",
+    "searchOrPaste": "Busca en YouTube o pega una URL…",
     "add": "añadir",
     "adding": "…",
     "added": "Añadido a la cola.",
@@ -38,6 +38,13 @@
     "volume": "Volumen",
     "mute": "Silenciar",
     "unmute": "Quitar silencio"
+  },
+  "search": {
+    "results": "Resultados de búsqueda",
+    "loading": "Buscando…",
+    "empty": "Sin resultados.",
+    "unavailable": "La búsqueda no está disponible ahora mismo. Pegar una URL sigue funcionando.",
+    "loadingMore": "Cargando más…"
   },
   "lyrics": {
     "loading": "Buscando letra…",

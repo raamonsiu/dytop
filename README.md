@@ -21,10 +21,11 @@ No account. No server. No tracking.
 
 ## About DYTOP
 
-DYTOP turns a pasted YouTube link into an ambient listening session: a queue,
-a history, and lyrics that scroll in time with the track. There is no backend
-behind any of it, only public, keyless APIs, so there is nothing to sign up
-for and nothing of yours to store on a server.
+DYTOP turns a pasted YouTube link, or a quick search, into an ambient listening
+session: a queue, a history, and lyrics that scroll in time with the track.
+There is no application backend behind any of it, only public, keyless APIs
+(search goes through a stateless same-origin proxy, see below), so there is
+nothing to sign up for and nothing of yours to store on a server.
 
 The app ships as **two views over one playback engine**:
 
@@ -65,8 +66,14 @@ switched off, since there's nothing personal left to control.
 ### Playback
 
 - **Paste a URL, get a track** - `watch`, `youtu.be`, `/shorts/` and `/embed/`
-  links are all recognised. No search box: search needs an API key, and a
-  static SPA has nowhere safe to keep one.
+  links are all recognised.
+- **Or just type** - anything that isn't a link searches YouTube as you type,
+  in both views: a scrolling list of videos with channel, views and length,
+  more loading as you scroll, arrow keys and Enter to pick. Picking one queues
+  it exactly like a pasted link. Live streams are left out, since they never
+  end. No API key and no quota: the query goes to YouTube's own internal
+  search endpoint through a same-origin proxy (nginx in Docker, Vite in dev),
+  because the browser can't call it directly.
 - **Metadata without a backend** - title, channel and thumbnail come from
   YouTube's public oEmbed endpoint; no Data API, no quota, no key.
 - **A real queue** - history, now playing and upcoming, with drag-to-reorder,
@@ -147,6 +154,9 @@ pnpm install
 pnpm dev          # http://localhost:5173
 ```
 
+Search works under `pnpm dev` and `pnpm preview` too: Vite proxies
+`/api/youtube/search` the same way the Docker image's nginx does.
+
 ### Development commands
 
 ```bash
@@ -167,6 +177,13 @@ Node, but the image that actually runs is `nginx:alpine` serving the static
 output. There is no Node process, and no application server, at runtime.
 Security headers and a CSP scoped to exactly what the app needs (YouTube,
 lrclib, oEmbed) live in `docker/security-headers.conf`.
+
+nginx does one thing beyond serving files: `POST /api/youtube/search` is
+forwarded to YouTube's InnerTube search endpoint, stripped of cookies, origin,
+referrer and client address, and rate-limited per client. Since that endpoint
+is undocumented, a change on YouTube's side can break search; pasting links
+keeps working regardless. If it starts failing with HTTP 400, bump
+`YT_INNERTUBE_CLIENT` in `src/constants/youtube.ts` first.
 
 ---
 
@@ -234,8 +251,8 @@ did, what you expected, and what happened instead.
 
 ## Privacy
 
-**DYTOP has no backend.** There is no account, no analytics, no crash
-reporting and no telemetry of any kind. What the app stores, it stores on
+**DYTOP has no application backend.** There is no account, no analytics, no
+crash reporting and no telemetry of any kind. What the app stores, it stores on
 your device.
 
 | Data | Where it lives | Leaves the device? |
@@ -245,9 +262,10 @@ your device.
 | Track title and artist guess | Sent to lrclib.net | Only to look up lyrics for that track |
 | Video ID | Sent to YouTube's oEmbed endpoint and IFrame API | Only to fetch metadata and play the video |
 | Playlist ID | Sent to YouTube's IFrame API | Only to resolve a pasted playlist to its tracks |
+| Search text | Sent to the server hosting DYTOP, which forwards it to YouTube | Only to list search results. YouTube sees it coming from the server's address, not yours; the proxy doesn't record it (nginx's access log keeps the path, not the request body) |
 
-Nothing else reaches the network. There is no first-party server for any of
-this to go through in the first place.
+Nothing else reaches the network. The search proxy is the only first-party
+server hop, it keeps no state, and it forwards no cookies or client address.
 
 ---
 

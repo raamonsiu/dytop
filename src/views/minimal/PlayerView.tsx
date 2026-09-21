@@ -59,7 +59,10 @@ export function PlayerView() {
           // min-h-0 is required: grid items default to min-height:auto and
           // refuse to shrink below their content, which left the track stuck a
           // dozen pixels short of collapsed.
-          className="flex min-h-0 flex-col items-center gap-4 overflow-hidden px-6 pb-8 transition-opacity duration-500 short:gap-2 short:pb-3"
+          // The clip is only needed while collapsing, and an open search list
+          // holds the chrome visible, so it's lifted to let the list float up
+          // over the card instead of being cut off at this box's top edge.
+          className="flex min-h-0 flex-col items-center gap-4 overflow-hidden px-6 pb-8 transition-opacity duration-500 has-[[aria-expanded=true]]:overflow-visible short:gap-2 short:pb-3"
           style={{ opacity: chromeVisible ? 1 : 0 }}
           inert={!chromeVisible}
         >
@@ -71,8 +74,9 @@ export function PlayerView() {
             short viewports, which also fired on zoom-in: zooming shrinks the
             viewport in CSS pixels, so the only way to add a track vanished at
             exactly the moment someone was trying to read the page more closely.
+            Search results open upward: the field is the last thing on screen.
           */}
-          <AddSongInline />
+          <AddSongInline resultsAbove />
         </div>
       </div>
     </section>
