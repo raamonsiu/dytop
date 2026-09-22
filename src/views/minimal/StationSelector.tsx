@@ -16,8 +16,8 @@ const KEY_PRESS_MS = 180;
 const SLIDE_MS = 260;
 
 /**
- * Station transport: two cassette keys and a dot-matrix screen, sitting on
- * the player card's top edge like the keys of a deck.
+ * Station transport: two cassette keys and a lit tuner display, sitting on
+ * the player card's top edge like the keys and window of a deck.
  *
  * Renders nothing while there is only one station, since a selector that
  * cannot select is just furniture.
@@ -41,8 +41,9 @@ export function StationSelector({
 
   return (
     // -mb-px so the keys and the screen share the card's top border instead of
-    // drawing a second line a pixel above it.
-    <div className="-mb-px flex select-none items-end justify-between gap-2 px-4">
+    // drawing a second line a pixel above it, and no padding so both sit flush
+    // with the deck's own edges.
+    <div className="-mb-px flex select-none items-end justify-between gap-2">
       <div className="flex gap-1">
         <CassetteKey label={t("radio.previousStation")} onPress={() => step(-1)}>
           <ChevronLeft size={14} />
@@ -104,7 +105,7 @@ function CassetteKey({
 }
 
 /**
- * The station name on a dot-matrix screen.
+ * The station name behind the glass of a tuner display.
  *
  * On a change the outgoing name slides out and the new one slides in behind
  * it, in the direction the key pressed: the screen reads as one strip of
@@ -137,16 +138,14 @@ function StationScreen({ name, direction }: { name: string; direction: 1 | -1 })
       role="status"
       aria-label={t("radio.station")}
       style={{ "--station-dir": direction } as React.CSSProperties}
-      className={cn(
-        "relative h-7 w-40 overflow-hidden border border-b-0 border-surface-border",
-        // The unlit pixels of the matrix, with the lit name over them.
-        "bg-black bg-[radial-gradient(circle,rgba(255,255,255,0.22)_1px,transparent_1px)] bg-[length:4px_4px]",
-      )}
+      className="relative h-7 w-40 overflow-hidden border border-b-0 border-station-screen-border bg-station-screen"
     >
       {leaving === null ? null : (
         <ScreenLine key={`${leaving}-out`} text={leaving} className="animate-station-leave" />
       )}
       <ScreenLine key={name} text={name} className={leaving === null ? undefined : "animate-station-enter"} />
+      {/* Last, so the glass sits over the names and not under them. */}
+      <span aria-hidden className="station-screen-glass pointer-events-none absolute inset-0" />
     </div>
   );
 }
@@ -157,7 +156,8 @@ function ScreenLine({ text, className }: { text: string; className?: string }) {
       className={cn(
         // The name as the station spells it: the screen is the one place it
         // appears, so upper-casing it here would lose the only styling it has.
-        "absolute inset-0 grid place-items-center font-display text-sm tracking-[0.2em] text-white",
+        "station-screen-text absolute inset-0 grid place-items-center",
+        "font-display text-sm tracking-[0.25em]",
         className,
       )}
     >

@@ -28,6 +28,12 @@
      shell mounts and supplies the real palette. */
   --background: #0a0a0a;
   --foreground: #f5f5f5;
+
+  /* The station display's casing is a device, not a surface: it stays dark
+     whatever the theme is, the way a tuner's window does. What it *lights up*
+     with is the view's accent, declared with it below. */
+  --station-screen: #07040a;
+  --station-screen-border: #2a1b3a;
 }
 
 /* The accent indirection.
@@ -40,6 +46,15 @@
    value of --accent. */
 [data-view] {
   --accent: var(--accent-override, var(--accent-base));
+
+  /* Phosphor lights far brighter than the accent itself: at full saturation
+     the name reads as unlit paint on a black box rather than a display. The
+     halo keeps the accent's own colour, which is what a lit tube does — bright
+     core, saturated bloom. Derived here rather than on :root because --accent
+     only exists from this rule down. */
+  --station-screen-lit: color-mix(in oklab, var(--accent) 45%, #ffffff);
+  --station-screen-glow: color-mix(in oklab, var(--accent) 95%, transparent);
+  --station-screen-halo: color-mix(in oklab, var(--accent) 50%, transparent);
 
   background: var(--background);
   color: var(--foreground);
@@ -59,6 +74,9 @@
   --color-glass: var(--glass);
   --color-glass-strong: var(--glass-strong);
   --color-glass-border: var(--glass-border);
+  --color-station-screen: var(--station-screen);
+  --color-station-screen-border: var(--station-screen-border);
+  --color-station-screen-lit: var(--station-screen-lit);
 
   /* Gives `rounded-view`, which is 0 in minimal and 14px in legacy — the one
      utility that carries most of the difference between the two languages. */
@@ -139,6 +157,26 @@ body {
   );
   background-size: 48px 100%;
   background-repeat: repeat-x;
+}
+
+/* The glass in front of the station display: fine horizontal lines, the way a
+   vacuum-fluorescent panel shows them, laid over the name rather than behind
+   it so the lit text reads as being under the glass. */
+@utility station-screen-glass {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.07) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+/* Lit phosphor, not plain coloured text: without the halo the name reads as a
+   label printed on a dark box. */
+@utility station-screen-text {
+  color: var(--station-screen-lit);
+  text-shadow:
+    0 0 8px var(--station-screen-glow),
+    0 0 18px var(--station-screen-halo);
 }
 
 /* Station display: the name is wound past like a strip, so the outgoing and
