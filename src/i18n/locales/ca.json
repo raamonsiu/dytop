@@ -10,7 +10,10 @@
     "toMinimal": "vista minimal"
   },
   "radio": {
+    "nextStation": "Emissora següent",
     "offline": "La ràdio està sense connexió",
+    "previousStation": "Emissora anterior",
+    "station": "Emissora",
     "tapToListen": "Toca per escoltar"
   },
   "history": {

@@ -10,7 +10,10 @@
     "toMinimal": "minimal view"
   },
   "radio": {
+    "nextStation": "Next station",
     "offline": "Radio is offline",
+    "previousStation": "Previous station",
+    "station": "Station",
     "tapToListen": "Tap to listen"
   },
   "history": {

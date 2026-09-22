@@ -66,6 +66,8 @@ export interface RadioBackground {
 
 export interface RadioStation {
   id: string;
+  /** Shown on the station display; short, since the screen is one line wide. */
+  name: string;
   manifest: RadioManifestEntry[];
   fallback: RadioManifestEntry;
   background: RadioBackground;
@@ -83,6 +85,7 @@ export interface RadioStation {
 export const RADIO_STATIONS = {
   d1: {
     id: "d1",
+    name: "D1",
     manifest: MANIFEST,
     fallback: RADIO_FALLBACK,
     background: {
@@ -92,6 +95,7 @@ export const RADIO_STATIONS = {
   },
   bellas: {
     id: "bellas",
+    name: "BeLLaS",
     manifest: bellasManifest,
     fallback: RADIO_FALLBACK,
     background: {
@@ -104,3 +108,20 @@ export const RADIO_STATIONS = {
 export type RadioStationId = keyof typeof RADIO_STATIONS;
 
 export const DEFAULT_RADIO_STATION: RadioStationId = "d1";
+
+/** Registry order, which is the order the station selector steps through. */
+export const RADIO_STATION_IDS = Object.keys(RADIO_STATIONS) as RadioStationId[];
+
+export function isRadioStationId(value: unknown): value is RadioStationId {
+  return typeof value === "string" && value in RADIO_STATIONS;
+}
+
+/**
+ * The station `offset` steps away, wrapping in both directions so a pair of
+ * prev/next keys reaches every station however many there are.
+ */
+export function stationAtOffset(from: RadioStationId, offset: number): RadioStationId {
+  const count = RADIO_STATION_IDS.length;
+  const index = RADIO_STATION_IDS.indexOf(from);
+  return RADIO_STATION_IDS[(((index + offset) % count) + count) % count] ?? DEFAULT_RADIO_STATION;
+}

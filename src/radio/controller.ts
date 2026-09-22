@@ -315,10 +315,12 @@ export function startRadio(id: RadioStationId = DEFAULT_RADIO_STATION): void {
  * the queue's. Only the schedule the slot comes from changes here.
  *
  * Asking for the station already playing is the common case (every view swap),
- * and is a no-op rather than a reload.
+ * and is a no-op rather than a reload. So is asking while nothing is playing:
+ * the station a future session starts on is the caller's stored preference,
+ * not state this module keeps.
  */
-function retune(id: RadioStationId): void {
-  if (id === stationId) return;
+export function retune(id: RadioStationId): void {
+  if (!active || id === stationId) return;
   stationId = id;
   // Forget where we were so the new station's slot reads as a change.
   loadedSlot = null;

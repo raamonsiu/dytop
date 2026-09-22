@@ -141,6 +141,35 @@ body {
   background-repeat: repeat-x;
 }
 
+/* Station display: the name is wound past like a strip, so the outgoing and
+   incoming names travel the same way. --station-dir is +1 for the next-station
+   key and -1 for the previous one, set inline by StationSelector. */
+@keyframes station-enter {
+  from {
+    transform: translateX(calc(var(--station-dir, 1) * 100%));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes station-leave {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(var(--station-dir, 1) * -100%));
+  }
+}
+
+@utility animate-station-enter {
+  animation: station-enter 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@utility animate-station-leave {
+  animation: station-leave 260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

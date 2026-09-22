@@ -1,23 +1,35 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { getPrefs, setPref, usePref } from "@/lib/prefs";
 import { usePlayerError } from "@/player/playerStore";
+import type { RadioStationId } from "@/radio/manifest";
 import { entryToTrack } from "@/radio/position";
-import { startRadio, stopRadio, unlockRadioPlayback, useRadio } from "@/radio/controller";
+import { retune, startRadio, stopRadio, unlockRadioPlayback, useRadio } from "@/radio/controller";
 import { LyricsColumn } from "./LyricsColumn";
 import { NextUpIndicator } from "./NextUpIndicator";
 import { NowPlayingCard } from "./NowPlayingCard";
+import { StationSelector } from "./StationSelector";
 import { useMinimalOutletContext } from "./outletContext";
 
 export function RadioView() {
   const { t } = useTranslation();
   const { chromeVisible } = useMinimalOutletContext();
-  const { active, entry, next, needsGesture } = useRadio();
+  const { active, entry, next, needsGesture, stationId } = useRadio();
   const errorKey = usePlayerError();
+  const preferredStation = usePref("radioStation");
 
   useEffect(() => {
-    startRadio();
+    // The stored station is only the one a *new* session starts on: reading it
+    // here rather than in a dependency keeps a mid-session change to `retune`,
+    // which swaps the schedule without tearing the session down.
+    startRadio(getPrefs().radioStation);
     return () => stopRadio();
   }, []);
+
+  const selectStation = (id: RadioStationId) => {
+    setPref("radioStation", id);
+    retune(id);
+  };
 
   // Same treatment as PlayerView's empty state: nothing to show yet, so
   // centre a status line instead of an empty chrome section.
@@ -65,7 +77,13 @@ export function RadioView() {
           inert={!chromeVisible}
         >
           {errorKey ? <PlayerError messageKey={errorKey} /> : null}
-          <NowPlayingCard track={track} interactive={false} />
+          <div className="flex w-full max-w-xl flex-col">
+            <StationSelector
+              stationId={stationId ?? preferredStation}
+              onSelect={selectStation}
+            />
+            <NowPlayingCard track={track} interactive={false} />
+          </div>
           <NextUpIndicator
             overrideNext={next ? { title: next.title, author: next.author } : null}
           />
