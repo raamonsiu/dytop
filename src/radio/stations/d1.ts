@@ -1,7 +1,7 @@
 import type { RadioManifestEntry } from "../manifest";
 
 /**
- * The default station's rotation. Hand-curated before the generator existed;
+ * The D1 station's rotation, the one the app opens on. Hand-curated before the generator existed;
  * durations are approximate hand-verified values. If one drifts from the
  * published video the schedule still works, it just changes where the loop
  * wraps. Sourced from Spotify liked songs, up to track 420.

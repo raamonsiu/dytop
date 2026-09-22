@@ -11,7 +11,7 @@
  */
 
 import { manifest as bellasManifest } from "./stations/bellas";
-import { manifest as defaultManifest } from "./stations/default";
+import { manifest as d1Manifest } from "./stations/d1";
 
 export interface RadioManifestEntry {
   videoId: string;
@@ -55,7 +55,7 @@ export const RADIO_FALLBACK: RadioManifestEntry = {
  * and the fallback invariants were written against it before stations
  * existed.
  */
-export const MANIFEST: RadioManifestEntry[] = defaultManifest;
+export const MANIFEST: RadioManifestEntry[] = d1Manifest;
 
 /** A station's look while no user background is active behind it (legacy view only). */
 export interface RadioBackground {
@@ -81,12 +81,12 @@ export interface RadioStation {
  * is ever tuned; the rest wait for that control.
  */
 export const RADIO_STATIONS = {
-  default: {
-    id: "default",
+  d1: {
+    id: "d1",
     manifest: MANIFEST,
     fallback: RADIO_FALLBACK,
     background: {
-      id: "radio-default",
+      id: "radio-d1",
       className: "bg-gradient-to-b from-surface via-background to-background",
     },
   },
@@ -103,4 +103,4 @@ export const RADIO_STATIONS = {
 
 export type RadioStationId = keyof typeof RADIO_STATIONS;
 
-export const DEFAULT_RADIO_STATION: RadioStationId = "default";
+export const DEFAULT_RADIO_STATION: RadioStationId = "d1";
