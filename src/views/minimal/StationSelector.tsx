@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
+import { useChromeHold } from "@/lib/useUiVisibility";
 import {
   RADIO_STATION_IDS,
   RADIO_STATIONS,
@@ -31,6 +32,11 @@ export function StationSelector({
 }) {
   const { t } = useTranslation();
   const [direction, setDirection] = useState<1 | -1>(1);
+  // Auto-hide measures idleness by pointer movement, and a pointer resting on
+  // a key it just pressed is perfectly still — so without this the transport
+  // slides away two seconds after every press, taking the card with it.
+  const [engaged, setEngaged] = useState(false);
+  useChromeHold(engaged);
 
   if (RADIO_STATION_IDS.length < 2) return null;
 
@@ -43,7 +49,16 @@ export function StationSelector({
     // -mb-px so the keys and the screen share the card's top border instead of
     // drawing a second line a pixel above it, and no padding so both sit flush
     // with the deck's own edges.
-    <div className="-mb-px flex select-none items-end justify-between gap-2">
+    <div
+      onPointerEnter={() => setEngaged(true)}
+      onPointerLeave={() => setEngaged(false)}
+      // A touch pointer is destroyed on lift, which fires pointerleave; cancel
+      // covers the gestures that never get that far.
+      onPointerCancel={() => setEngaged(false)}
+      onFocusCapture={() => setEngaged(true)}
+      onBlurCapture={() => setEngaged(false)}
+      className="-mb-px flex select-none items-end justify-between gap-2"
+    >
       <div className="flex gap-1">
         <CassetteKey label={t("radio.previousStation")} onPress={() => step(-1)}>
           <ChevronLeft size={14} />
