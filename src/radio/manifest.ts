@@ -10,6 +10,7 @@
  * script reads it from the YouTube Data API).
  */
 
+import { manifest as bellasManifest } from "./stations/bellas";
 import { manifest as defaultManifest } from "./stations/default";
 
 export interface RadioManifestEntry {
@@ -87,6 +88,15 @@ export const RADIO_STATIONS = {
     background: {
       id: "radio-default",
       className: "bg-gradient-to-b from-surface via-background to-background",
+    },
+  },
+  bellas: {
+    id: "bellas",
+    manifest: bellasManifest,
+    fallback: RADIO_FALLBACK,
+    background: {
+      id: "radio-bellas",
+      className: "bg-gradient-to-b from-background via-surface to-background",
     },
   },
 } satisfies Record<string, RadioStation>;
