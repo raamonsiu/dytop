@@ -39,6 +39,14 @@
   --foreground: #f5f5f5;
 }
 
+/* Registered so legacy's lyrics scrim can transition its colour; an
+   unregistered custom property would just snap between samples. */
+@property --lyrics-scrim-colour {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgb(0 0 0);
+}
+
 /* The accent indirection.
    Every view shell carries data-view, so declaring `--accent` here means each
    shell recomputes it against its OWN --accent-override. Legacy's dynamic

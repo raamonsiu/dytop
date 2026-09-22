@@ -1,11 +1,11 @@
 import { useEffect, type RefObject } from "react";
 import { VIDEO_ACCENT_SAMPLE_MS } from "@/constants/player";
-import { toCssRgb } from "./accent";
-import { sampleAccent } from "./sampleMedia";
+import { luma, lyricsScrimColour, lyricsScrimFor, toCssRgb } from "./accent";
+import { sampleBackground } from "./sampleMedia";
 
 /**
- * Drives `--accent-override` on a view's root element from the active
- * background.
+ * Drives `--accent-override`, `--lyrics-scrim` and `--lyrics-scrim-colour` on
+ * a view's root element from the active background.
  *
  * Written to the shell node, never `:root`. globals.css derives `--accent` from
  * `--accent-override` on `[data-view]`, so scoping it here is what keeps the
@@ -28,6 +28,8 @@ export function useDynamicAccent(
 
     if (!backgroundKey) {
       shell.style.removeProperty("--accent-override");
+      shell.style.removeProperty("--lyrics-scrim");
+      shell.style.removeProperty("--lyrics-scrim-colour");
       return;
     }
 
@@ -36,10 +38,18 @@ export function useDynamicAccent(
     const apply = () => {
       const media = mediaRef.current;
       if (cancelled || !media) return;
-      const accent = sampleAccent(media);
-      // A failed sample keeps the previous accent rather than snapping to a
+      const sample = sampleBackground(media);
+      // A failed sample keeps the previous values rather than snapping to a
       // fallback: a single undecoded video frame shouldn't flash the UI.
-      if (accent) shell.style.setProperty("--accent-override", toCssRgb(accent));
+      if (!sample) return;
+      shell.style.setProperty("--accent-override", toCssRgb(sample.accent));
+      if (sample.centre) {
+        shell.style.setProperty("--lyrics-scrim", lyricsScrimFor(luma(sample.centre)).toFixed(2));
+        shell.style.setProperty(
+          "--lyrics-scrim-colour",
+          toCssRgb(lyricsScrimColour(sample.centre)),
+        );
+      }
     };
 
     // Media may not be decoded yet on the first pass; the interval covers it.

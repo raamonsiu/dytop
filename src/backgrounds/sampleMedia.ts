@@ -1,4 +1,10 @@
-import { normalizeAccent, pickAccent, SAMPLE_SIZE, type Rgb } from "./accent";
+import {
+  centreColour,
+  normalizeAccent,
+  pickAccent,
+  SAMPLE_SIZE,
+  type Rgb,
+} from "./accent";
 
 /**
  * A single reused canvas. Allocating one per sample would churn GPU-backed
@@ -17,15 +23,24 @@ function ensureCanvas(): CanvasRenderingContext2D | null {
   return context;
 }
 
+export interface BackgroundSample {
+  accent: Rgb;
+  /** Average colour of the screen centre, or null if it couldn't be read. */
+  centre: Rgb | null;
+}
+
 /**
- * Samples an accent colour from an image or video element.
+ * Samples an accent colour and the centre's average colour from an image or video
+ * element, from one shared read of the pixels.
  *
  * Returns null rather than throwing when the frame can't be read. The common
  * cause is a tainted canvas: drawing cross-origin media makes `getImageData`
  * throw a SecurityError, and a background that can't be sampled should quietly
  * leave the accent alone, not break the view.
  */
-export function sampleAccent(source: HTMLImageElement | HTMLVideoElement): Rgb | null {
+export function sampleBackground(
+  source: HTMLImageElement | HTMLVideoElement,
+): BackgroundSample | null {
   const ctx = ensureCanvas();
   if (!ctx) return null;
 
@@ -39,7 +54,11 @@ export function sampleAccent(source: HTMLImageElement | HTMLVideoElement): Rgb |
     ctx.drawImage(source, 0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
     const { data } = ctx.getImageData(0, 0, SAMPLE_SIZE, SAMPLE_SIZE);
     const picked = pickAccent(data);
-    return picked ? normalizeAccent(picked) : null;
+    if (!picked) return null;
+    return {
+      accent: normalizeAccent(picked),
+      centre: centreColour(data, SAMPLE_SIZE),
+    };
   } catch {
     return null;
   }

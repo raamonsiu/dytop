@@ -95,3 +95,57 @@ export function normalizeAccent(color: Rgb): Rgb {
 export function toCssRgb({ r, g, b }: Rgb): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
+
+/**
+ * Average colour of the centre of a square RGBA sample: the middle 40% of rows
+ * and 60% of columns, which is roughly where legacy centres its lyrics.
+ * Returns null when every pixel there is (near) transparent.
+ */
+export function centreColour(data: Uint8ClampedArray, size: number): Rgb | null {
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  let count = 0;
+
+  for (let y = Math.floor(size * 0.3); y < Math.ceil(size * 0.7); y++) {
+    for (let x = Math.floor(size * 0.2); x < Math.ceil(size * 0.8); x++) {
+      const i = (y * size + x) * 4;
+      if ((data[i + 3] ?? 0) < 200) continue;
+      r += data[i] ?? 0;
+      g += data[i + 1] ?? 0;
+      b += data[i + 2] ?? 0;
+      count++;
+    }
+  }
+
+  if (!count) return null;
+  return { r: Math.round(r / count), g: Math.round(g / count), b: Math.round(b / count) };
+}
+
+/** Luma (0–1) of a gamma-encoded colour. */
+export function luma({ r, g, b }: Rgb): number {
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+}
+
+/**
+ * The background's own centre colour, pushed down in lightness so white text
+ * reads over it. Saturation gets a slight lift because darkening alone turns
+ * most tones muddy.
+ */
+export function lyricsScrimColour(centre: Rgb): Rgb {
+  const [hue, saturation, lightness] = rgbToHsl(centre);
+  return hslToRgb(hue, Math.min(1, saturation * 1.15), lightness * 0.45);
+}
+
+export const LYRICS_SCRIM_MIN = 0.15;
+export const LYRICS_SCRIM_MAX = 0.55;
+
+/**
+ * Opacity of the tinted scrim behind the lyrics for a given centre luma. Dark
+ * backgrounds keep a barely-there floor; from mid-grey up it ramps linearly so
+ * white text holds its contrast on a bright photo.
+ */
+export function lyricsScrimFor(luminance: number): number {
+  const t = Math.min(1, Math.max(0, (luminance - 0.25) / 0.5));
+  return LYRICS_SCRIM_MIN + (LYRICS_SCRIM_MAX - LYRICS_SCRIM_MIN) * t;
+}

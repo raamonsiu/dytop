@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { hslToRgb, normalizeAccent, pickAccent, rgbToHsl } from "./accent";
+import {
+  centreColour,
+  hslToRgb,
+  luma,
+  LYRICS_SCRIM_MAX,
+  LYRICS_SCRIM_MIN,
+  lyricsScrimColour,
+  lyricsScrimFor,
+  normalizeAccent,
+  pickAccent,
+  rgbToHsl,
+} from "./accent";
 
 /** Builds sampled image data from a list of RGBA pixels. */
 function imageData(pixels: number[][]): Uint8ClampedArray {
@@ -89,5 +100,55 @@ describe("normalizeAccent", () => {
     const [sourceHue] = rgbToHsl(source);
     const [resultHue] = rgbToHsl(normalizeAccent(source));
     expect(resultHue).toBeCloseTo(sourceHue, 1);
+  });
+});
+
+describe("centreColour", () => {
+  /** A size×size buffer where the centre region is `centre` and the rest `edge`. */
+  function framed(size: number, centre: number[], edge: number[]): Uint8ClampedArray {
+    const pixels: number[][] = [];
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const inside = y >= size * 0.3 && y < size * 0.7 && x >= size * 0.2 && x < size * 0.8;
+        pixels.push(inside ? centre : edge);
+      }
+    }
+    return imageData(pixels);
+  }
+
+  it("reads only the centre, ignoring a dark frame around it", () => {
+    const colour = centreColour(framed(10, [240, 200, 160, 255], [0, 0, 0, 255]), 10);
+    expect(colour).toEqual({ r: 240, g: 200, b: 160 });
+  });
+
+  it("returns null when the centre is transparent", () => {
+    expect(centreColour(framed(10, [255, 255, 255, 0], [0, 0, 0, 255]), 10)).toBeNull();
+  });
+});
+
+describe("lyricsScrimColour", () => {
+  it("keeps the hue but lands dark enough under white text", () => {
+    const source = { r: 244, g: 217, b: 184 }; // light cream
+    const [sourceHue] = rgbToHsl(source);
+    const scrim = lyricsScrimColour(source);
+    const [hue] = rgbToHsl(scrim);
+    expect(hue).toBeCloseTo(sourceHue, 1);
+    expect(luma(scrim)).toBeLessThan(0.45);
+  });
+});
+
+describe("lyricsScrimFor", () => {
+  it("keeps the floor on dark backgrounds", () => {
+    expect(lyricsScrimFor(0.1)).toBe(LYRICS_SCRIM_MIN);
+  });
+
+  it("reaches the ceiling on bright backgrounds", () => {
+    expect(lyricsScrimFor(0.95)).toBe(LYRICS_SCRIM_MAX);
+  });
+
+  it("ramps in between", () => {
+    const mid = lyricsScrimFor(0.5);
+    expect(mid).toBeGreaterThan(LYRICS_SCRIM_MIN);
+    expect(mid).toBeLessThan(LYRICS_SCRIM_MAX);
   });
 });
