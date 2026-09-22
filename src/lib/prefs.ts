@@ -5,6 +5,7 @@ import {
   type BackgroundMode,
   type UiVisibility,
 } from "@/constants/app";
+import { DEFAULT_RADIO_STATION, isRadioStationId, type RadioStationId } from "@/radio/manifest";
 import type { ColorScheme, ViewName } from "@/themes/tokens";
 import { createStore, useStoreSelector } from "./createStore";
 
@@ -23,6 +24,8 @@ export interface Prefs {
   /** 0-100. Applied to the embed on boot and on every load, since the IFrame
    * API resets to full volume on its own (see `forceAudible` in the engine). */
   volume: number;
+  /** Station the radio tunes to on entry, so a choice outlives the session. */
+  radioStation: RadioStationId;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -35,6 +38,7 @@ export const DEFAULT_PREFS: Prefs = {
   uiVisibility: DEFAULT_UI_VISIBILITY,
   showRemainingTime: false,
   volume: 100,
+  radioStation: DEFAULT_RADIO_STATION,
 };
 
 /**
@@ -54,6 +58,9 @@ function readStoredPrefs(): Prefs {
     // Enum values are the part most likely to be renamed between releases, and
     // an unrecognised one leaves the UI in a state no control can reach.
     merged.uiVisibility = normalizeUiVisibility(merged.uiVisibility);
+    // Stations come and go between releases, and a stored id that no longer
+    // exists would index the registry to undefined and crash the schedule.
+    if (!isRadioStationId(merged.radioStation)) merged.radioStation = DEFAULT_RADIO_STATION;
     if (typeof merged.volume !== "number" || !Number.isFinite(merged.volume)) {
       merged.volume = DEFAULT_PREFS.volume;
     } else {

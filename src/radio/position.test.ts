@@ -110,7 +110,7 @@ describe("radioSlotAt", () => {
 describe("runtime-unavailable substitution", () => {
   it("swaps a refused video for the station fallback on the same slot", () => {
     const scheduled = radioSlotAt(DAY_EPOCH, null);
-    const healed = radioSlotAt(DAY_EPOCH, null, "default", new Set([scheduled.entry.videoId]));
+    const healed = radioSlotAt(DAY_EPOCH, null, "d1", new Set([scheduled.entry.videoId]));
     expect(healed.entry.videoId).toBe(RADIO_FALLBACK.videoId);
     // Same instant, so the loop keeps its wall-clock shape: a client that never
     // hit the failure is still on the same second of the same slot.
@@ -123,7 +123,7 @@ describe("runtime-unavailable substitution", () => {
     const healed = radioSlotAt(
       DAY_EPOCH,
       scheduled.entry.videoId,
-      "default",
+      "d1",
       new Set([scheduled.entry.videoId]),
     );
     expect(healed.changed).toBe(true);
@@ -131,7 +131,7 @@ describe("runtime-unavailable substitution", () => {
   });
 
   it("leaves an unrelated refusal alone", () => {
-    const slot = radioSlotAt(DAY_EPOCH, null, "default", new Set(["not-in-the-loop"]));
+    const slot = radioSlotAt(DAY_EPOCH, null, "d1", new Set(["not-in-the-loop"]));
     expect(slot.entry.videoId).toBe(radioSlotAt(DAY_EPOCH, null).entry.videoId);
     expect(slot.unavailable).toBe(false);
   });
@@ -141,7 +141,7 @@ describe("runtime-unavailable substitution", () => {
     const slot = radioSlotAt(
       DAY_EPOCH,
       RADIO_FALLBACK.videoId,
-      "default",
+      "d1",
       new Set([scheduled.entry.videoId, RADIO_FALLBACK.videoId]),
     );
     expect(slot.entry.videoId).toBe(RADIO_FALLBACK.videoId);
@@ -153,7 +153,7 @@ describe("runtime-unavailable substitution", () => {
 
   it("substitutes the up-next hint too, so it names what will actually play", () => {
     const next = upNextEntry(DAY_EPOCH);
-    const healed = upNextEntry(DAY_EPOCH, "default", new Set([next.videoId]));
+    const healed = upNextEntry(DAY_EPOCH, "d1", new Set([next.videoId]));
     expect(healed.videoId).toBe(RADIO_FALLBACK.videoId);
   });
 
@@ -183,11 +183,11 @@ describe("upNextEntry", () => {
 
 describe("optional arguments", () => {
   it("default to the registered station and to no known refusals", () => {
-    expect(dailySchedule("2026-08-28", "default")).toEqual(dailySchedule("2026-08-28"));
-    expect(radioSlotAt(DAY_EPOCH, null, "default", new Set())).toEqual(
+    expect(dailySchedule("2026-08-28", "d1")).toEqual(dailySchedule("2026-08-28"));
+    expect(radioSlotAt(DAY_EPOCH, null, "d1", new Set())).toEqual(
       radioSlotAt(DAY_EPOCH, null),
     );
-    expect(upNextEntry(DAY_EPOCH, "default", new Set())).toBe(upNextEntry(DAY_EPOCH));
+    expect(upNextEntry(DAY_EPOCH, "d1", new Set())).toBe(upNextEntry(DAY_EPOCH));
   });
 });
 
