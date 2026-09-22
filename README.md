@@ -94,10 +94,21 @@ switched off, since there's nothing personal left to control.
   skip/pause/previous, no adding songs, no background or lyrics-timing edits.
 - **Picks up mid-song** - joining, or refreshing the page, lands you inside
   the current track at the right second, never back at 0:00.
-- **A maintained catalog** - the station's playlist lives in
-  `src/radio/manifest.ts`. `scripts/fetch_radio_manifest.py` regenerates it
-  from a real YouTube playlist, pulling exact durations and embeddability
-  from YouTube's own API instead of guessing.
+- **A generated catalog** - each station's tracks live in their own file,
+  `src/radio/stations/<id>.ts`. `scripts/build_radio_station.py` writes one
+  from a YouTube playlist, or from public Spotify playlists by matching each
+  track to a YouTube video with a confidence score; tracks that don't clear
+  it are left out and listed, with the reason, in `radio-reports/<id>.md`.
+  Exact durations, embeddability and live-stream flags always come from
+  YouTube itself, never guesses: from the Data API with `--api-key`, or from
+  public endpoints (oEmbed + YouTube Music) without one, which costs only the
+  per-country block check.
+- **Stations remember where they came from** - a build saves its source in
+  `scripts/radio-stations/<id>.json`, so refreshing a station against its
+  playlist is `sync <id>` (or `sync --all`), which also reports what the
+  playlist gained and lost. That file holds the station's hand-settled
+  `overrides` too, and a rebuild never discards them. Run the script with
+  `--help` for setup and examples.
 
 ### Lyrics
 
@@ -176,7 +187,7 @@ lrclib, oEmbed) live in `docker/security-headers.conf`.
 src/
   themes/       design tokens shared by both views
   player/       YouTube engine, rAF clock, queue, controller
-  radio/        deterministic daily schedule + session controller for the shared station
+  radio/        deterministic daily schedule + session controller; stations/ holds each station's tracks
   lyrics/       LRC parser, lrclib client, sync state
   backgrounds/  IndexedDB storage, accent sampling, rotation
   views/        minimal/ and legacy/
@@ -185,7 +196,9 @@ docs/
   prototype.html   the original single-file prototype, kept verbatim
   PARITY.md        what was kept, what improved, and what diverged on purpose
 scripts/
-  fetch_radio_manifest.py   pulls a YouTube playlist into radio/manifest.ts's format
+  build_radio_station.py    YouTube or Spotify playlist -> src/radio/stations/<id>.ts
+  radiogen/                 its modules (Spotify embed reader, matcher, writers) and tests
+  radio-stations/           each station's remembered source and overrides
 ```
 
 ### Worth knowing before you touch anything
