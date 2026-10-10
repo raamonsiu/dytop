@@ -12,6 +12,8 @@
 
 import { manifest as bellasManifest } from "./stations/bellas";
 import { manifest as d1Manifest } from "./stations/d1";
+import { manifest as dplqtManifest } from "./stations/dplqt";
+import { manifest as dramManifest } from "./stations/dram";
 
 export interface RadioManifestEntry {
   videoId: string;
@@ -95,12 +97,32 @@ export const RADIO_STATIONS = {
   },
   bellas: {
     id: "bellas",
-    name: "BeLLaS",
+    name: "DBellaS",
     manifest: bellasManifest,
     fallback: RADIO_FALLBACK,
     background: {
       id: "radio-bellas",
       className: "bg-gradient-to-b from-background via-surface to-background",
+    },
+  },
+  dram: {
+    id: "dram",
+    name: "DRAM",
+    manifest: dramManifest,
+    fallback: RADIO_FALLBACK,
+    background: {
+      id: "radio-dram",
+      className: "bg-gradient-to-b from-surface via-surface to-background",
+    },
+  },
+  dplqt: {
+    id: "dplqt",
+    name: "DPLQT",
+    manifest: dplqtManifest,
+    fallback: RADIO_FALLBACK,
+    background: {
+      id: "radio-dplqt",
+      className: "bg-gradient-to-b from-background via-background to-surface",
     },
   },
 } satisfies Record<string, RadioStation>;

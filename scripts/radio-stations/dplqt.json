@@ -1,0 +1,11 @@
+{
+  "source": "spotify",
+  "playlists": [
+    "https://open.spotify.com/playlist/03PUAzqS1tfeSC4DFwL0XN"
+  ],
+  "region": "ES",
+  "accept": 0.8,
+  "review": 0.6,
+  "overrides": {},
+  "lastBuilt": "2026-10-10"
+}
