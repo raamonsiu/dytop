@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/app";
+import { LEGACY_VIEW_ENABLED, ROUTES } from "@/constants/app";
 import { getPrefs } from "@/lib/prefs";
 import { useDocumentLocale } from "@/lib/useDocumentLocale";
 import { useZoomControl } from "@/lib/useZoomControl";
@@ -25,7 +25,11 @@ export function RootLayout() {
 
     // Only a bare "/" is treated as "no opinion". A deep link is an explicit
     // request and always wins over the remembered view.
-    if (location.pathname === ROUTES.player && getPrefs().lastView === "legacy") {
+    if (
+      LEGACY_VIEW_ENABLED &&
+      location.pathname === ROUTES.player &&
+      getPrefs().lastView === "legacy"
+    ) {
       void navigate(ROUTES.legacy, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- first paint only

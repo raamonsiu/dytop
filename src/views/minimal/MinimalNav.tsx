@@ -1,6 +1,7 @@
 import { Brand } from "@/components/Brand";
 import { NavTabs } from "@/components/NavTabs";
 import { ViewToggle } from "@/components/ViewToggle";
+import { LEGACY_VIEW_ENABLED } from "@/constants/app";
 import { safeAreaOffset } from "@/lib/safeArea";
 
 export function MinimalNav() {
@@ -14,8 +15,12 @@ export function MinimalNav() {
       <Brand view="minimal" />
       <nav className="flex items-center gap-5">
         <NavTabs view="minimal" />
-        <span aria-hidden className="h-3 w-px bg-surface-border" />
-        <ViewToggle current="minimal" />
+        {LEGACY_VIEW_ENABLED && (
+          <>
+            <span aria-hidden className="h-3 w-px bg-surface-border" />
+            <ViewToggle current="minimal" />
+          </>
+        )}
       </nav>
     </header>
   );

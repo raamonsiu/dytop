@@ -1,3 +1,7 @@
+/** The legacy view is hidden until it's polished: no routes, no nav toggle, no
+ * startup restore. Flip to `true` to bring it all back; nothing was deleted. */
+export const LEGACY_VIEW_ENABLED = false;
+
 /** Single source of truth for paths, so links and the startup redirect can't
  * drift from the route table. */
 export const ROUTES = {

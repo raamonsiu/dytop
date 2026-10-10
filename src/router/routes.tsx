@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { ROUTES } from "@/constants/app";
+import { LEGACY_VIEW_ENABLED, ROUTES } from "@/constants/app";
 import { LegacyHistoryView } from "@/views/legacy/LegacyHistoryView";
 import { LegacyPlayerView } from "@/views/legacy/LegacyPlayerView";
 import { LegacyRadioView } from "@/views/legacy/LegacyRadioView";
@@ -35,14 +35,18 @@ export const router = createBrowserRouter([
           { path: ROUTES.history, element: <HistoryView /> },
         ],
       },
-      {
-        element: <LegacyShell />,
-        children: [
-          { path: ROUTES.legacy, element: <LegacyPlayerView /> },
-          { path: ROUTES.legacyRadio, element: <LegacyRadioView /> },
-          { path: ROUTES.legacyHistory, element: <LegacyHistoryView /> },
-        ],
-      },
+      ...(LEGACY_VIEW_ENABLED
+        ? [
+            {
+              element: <LegacyShell />,
+              children: [
+                { path: ROUTES.legacy, element: <LegacyPlayerView /> },
+                { path: ROUTES.legacyRadio, element: <LegacyRadioView /> },
+                { path: ROUTES.legacyHistory, element: <LegacyHistoryView /> },
+              ],
+            },
+          ]
+        : []),
       { path: "*", element: <Navigate to={ROUTES.player} replace /> },
     ],
   },
