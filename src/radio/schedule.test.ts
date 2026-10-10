@@ -117,20 +117,24 @@ describe("positionAt", () => {
 });
 
 describe("blocked-track substitution", () => {
+  const blockedCount = MANIFEST.filter((entry) => entry.blocked).length;
+
   it("never schedules a blocked track; substitutes it with RADIO_FALLBACK", () => {
     const s = dailySchedule(DAY);
     expect(s.order.some((entry) => entry.blocked)).toBe(false);
-    expect(s.order.filter((entry) => entry.videoId === RADIO_FALLBACK.videoId)).toHaveLength(1);
+    expect(s.order.filter((entry) => entry.videoId === RADIO_FALLBACK.videoId)).toHaveLength(
+      blockedCount,
+    );
   });
 
-  it("keeps the fallback fixed and the slot count identical across dates", () => {
+  it("keeps the fallback count fixed and the slot count identical across dates", () => {
     const a = dailySchedule(DAY);
     const b = dailySchedule("2026-08-29");
-    // Both days fill their (differently positioned) blocked slot with the same content.
+    // Both days fill their (differently positioned) blocked slots with the same content.
     const fallbackCountA = a.order.filter((e) => e.videoId === RADIO_FALLBACK.videoId).length;
     const fallbackCountB = b.order.filter((e) => e.videoId === RADIO_FALLBACK.videoId).length;
-    expect(fallbackCountA).toBe(1);
-    expect(fallbackCountB).toBe(1);
+    expect(fallbackCountA).toBe(blockedCount);
+    expect(fallbackCountB).toBe(blockedCount);
     expect(a.order.length).toBe(b.order.length);
   });
 });

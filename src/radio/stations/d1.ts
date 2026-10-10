@@ -105,7 +105,7 @@ export const manifest: RadioManifestEntry[] = [
   { videoId: "tXHhgLkBml4", durationSec: 266, title: "Jhay Cortez, Anuel AA - Ley Seca (Official Video)", author: "JhayCortezVEVO" },
   { videoId: "Qr6kE403zKU", durationSec: 221, title: "Omar Montes & JC Reyes - GOTERAS", author: "OMAR MONTES" },
   { videoId: "Es4u6GrV7hw", durationSec: 294, title: "ZOO - TOBOGAN (Llepolies, 2021)", author: "ZOO POSSE" },
-  { videoId: "7-PrttBWT24", durationSec: 200, title: "ALEX BROWN X THE LAWLESS - ESTRELLA (VIDEOCLIP OFICIAL)", author: "Alex Brown" },
+  { videoId: "7-PrttBWT24", durationSec: 200, title: "ALEX BROWN X THE LAWLESS - ESTRELLA (VIDEOCLIP OFICIAL)", author: "Alex Brown", blocked: true },
   { videoId: "u6sWBpIW6kE", durationSec: 181, title: "Summercat", author: "The Tyets - Topic" },
   { videoId: "b1kbLwvqugk", durationSec: 310, title: "Taylor Swift - Anti-Hero (Official Music Video)", author: "Taylor Swift" },
   { videoId: "wRKXAAV6jh4", durationSec: 209, title: "Taylor Swift - My Boy Only Breaks His Favorite Toys (Official Lyric Video)", author: "Taylor Swift" },
