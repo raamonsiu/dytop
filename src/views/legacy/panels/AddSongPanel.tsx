@@ -25,7 +25,14 @@ export function AddSongPanel() {
           // on focus for any input under that size.
           className="min-w-0 flex-1 rounded-view border border-glass-border bg-surface/60 px-3 py-2 text-xs text-accent caret-accent outline-none placeholder:text-accent/35 focus-visible:border-accent pointer-coarse:text-base"
         />
-        <Button type="submit" variant="primary" disabled={!canSubmit}>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={!canSubmit}
+          // Keeps the input focused through the press so mobile's keyboard-close
+          // reflow can't shift the button off a tap mid-gesture.
+          onPointerDown={(event) => event.preventDefault()}
+        >
           {t(pending ? "player.adding" : "player.add")}
         </Button>
       </div>

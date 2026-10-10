@@ -70,6 +70,9 @@ export function AddSongInline({ resultsAbove = false }: { resultsAbove?: boolean
           <button
             type="submit"
             disabled={!canSubmit}
+            // Keeps the input focused through the press so mobile's keyboard-close
+            // reflow can't shift the button off a tap mid-gesture.
+            onPointerDown={(event) => event.preventDefault()}
             className={cn(
               "shrink-0 border-l px-4 text-[11px] uppercase tracking-widest transition-colors",
               "focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent",
