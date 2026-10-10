@@ -5,6 +5,7 @@ import { getPrefs } from "@/lib/prefs";
 import { useDocumentLocale } from "@/lib/useDocumentLocale";
 import { useZoomControl } from "@/lib/useZoomControl";
 import { PlayerHost } from "@/player/PlayerHost";
+import { useMediaSessionSync } from "@/player/useMediaSessionSync";
 
 /**
  * Module-scoped, not state: the restore must happen once per page load, not
@@ -18,6 +19,7 @@ export function RootLayout() {
   const navigate = useNavigate();
   useDocumentLocale();
   useZoomControl();
+  useMediaSessionSync();
 
   useEffect(() => {
     if (startupRestoreDone) return;
